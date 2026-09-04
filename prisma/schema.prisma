@@ -1,0 +1,27 @@
+// WolfMart demo shop — its OWN database. Never SalesWolf's.
+// P0 defines only ChaosFlag so the Heroku release phase (prisma migrate deploy)
+// is proven end to end before feature work lands. Catalog, commerce, identity,
+// and chat models arrive in P1-P3.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A deliberate bug an SE can switch on live. See docs §6.4.
+model ChaosFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  label       String
+  description String
+  /// What QA Wolf catches when this is on — doubles as demo script copy.
+  proves      String
+  enabled     Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
