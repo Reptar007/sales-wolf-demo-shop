@@ -82,6 +82,27 @@ curl -s localhost:7072/api/health | grep egressAllowlist   # installed: true
 The P0 landing page reports the same status, so opening the deployed URL answers
 "is this still isolated?" without a shell.
 
+## Deploying
+
+Heroku runs the build with `NODE_ENV=production`, which makes `npm install` omit
+devDependencies. `vite` is a devDependency — correctly, it is a build tool — so
+`heroku-postbuild` asks for dev dependencies explicitly when building the
+frontend, then installs the backend with `--omit=dev`. Dropping that
+`--include=dev` breaks the deploy with `sh: vite: command not found`.
+
+```bash
+heroku create sales-wolf-demo-shop --team qa-wolf
+heroku config:set -a sales-wolf-demo-shop NODE_ENV=production \
+  DEMO_JWT_SECRET="$(openssl rand -base64 32)"
+git push heroku main
+```
+
+No Postgres addon yet — P0 uses no database. Confirm the boundary survived:
+
+```bash
+curl -s https://sales-wolf-demo-shop-*.herokuapp.com/api/health | grep egressAllowlist
+```
+
 ## Status
 
 **P0 complete** — isolation boundary, stack, CI, deployable skeleton.
