@@ -1,7 +1,11 @@
 // WolfMart demo shop — its OWN database. Never SalesWolf's.
-// P0 defines only ChaosFlag so the Heroku release phase (prisma migrate deploy)
-// is proven end to end before feature work lands. Catalog, commerce, identity,
-// and chat models arrive in P1-P3.
+// NOT WIRED UP YET. P0 opens no database connection, and @prisma/client is not
+// a dependency -- its postinstall hangs on engine download, which stalled CI and
+// would stall the Heroku build too. This file records the intended shape only.
+//
+// P1 reinstates Prisma with the catalog and commerce models, restores the
+// Procfile release phase, and debugs the engine download with real models to
+// generate. Do not add @prisma/client back without checking that first.
 
 generator client {
   provider = "prisma-client-js"

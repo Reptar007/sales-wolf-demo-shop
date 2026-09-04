@@ -11,7 +11,7 @@
     "dev:frontend": "cd frontend && npm run dev",
     "start": "cd backend && npm run start",
     "build": "npm run install:all && cd frontend && npm run build",
-    "heroku-postbuild": "npm install --include=optional && cd frontend && npm install --include=optional && npm run build && cd ../backend && npm install --include=optional && npx prisma generate --schema=../prisma/schema.prisma",
+    "heroku-postbuild": "npm install --include=optional && cd frontend && npm install --include=optional && npm run build && cd ../backend && npm install --include=optional",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "test": "cd backend && npm test",
     "lint": "eslint .",
