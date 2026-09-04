@@ -31,7 +31,20 @@ Three things that are easy to undo by accident:
    every request. Keep it on its own host.
 2. **Never copy config vars across.** This app has its own `DATABASE_URL` and its
    own `DEMO_JWT_SECRET`. See `.env.example`.
-3. **Don't widen the isolation guard's patterns.** It matches hosts and secrets,
+3. **Never share a Heroku addon between this app and the internal toolkit.** Both
+   live in the same Heroku team, which puts this one command in reach:
+
+   ```bash
+   # NEVER — sets the internal app's production DATABASE_URL on this public app.
+   heroku addons:attach <internal-postgres> -a sales-wolf-demo-shop
+   ```
+
+   Every control in the table above would still pass while this app read live
+   internal data, because the credential arrives as ordinary config. This app
+   provisions its own Postgres, always. Same rule for piping `heroku config:get`
+   from one app into `config:set` on the other.
+
+4. **Don't widen the isolation guard's patterns.** It matches hosts and secrets,
    not the word "SalesWolf" in a comment — writing down _why_ the boundary exists
    is encouraged. The test file explains the reasoning.
 
