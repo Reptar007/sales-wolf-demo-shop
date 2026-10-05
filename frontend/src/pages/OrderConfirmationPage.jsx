@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import Confetti from '../components/Confetti.jsx';
 import OrderDetail from '../components/OrderDetail.jsx';
 import NotFoundPage from './NotFoundPage.jsx';
 import { useApi } from '../hooks/useApi.js';
@@ -16,9 +17,11 @@ export default function OrderConfirmationPage() {
 
   return (
     <section className="page page--medium confirmation">
+      <Confetti />
       <p className="confirmation__check" aria-hidden="true">
         ✓
       </p>
+      <p className="confirmation__eyebrow">Awoooo!</p>
       <h1>Thanks for your order!</h1>
       <p className="muted">
         A confirmation was sent to <strong>{data.order.email}</strong> — find it in the{' '}

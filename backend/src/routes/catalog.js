@@ -2,7 +2,7 @@ import express from 'express';
 import { prisma } from '../db.js';
 import { isEnabled, sleep } from '../chaos/flags.js';
 import { notFound } from '../http/errors.js';
-import { productArt } from '../commerce/art.js';
+import { categoryArt, productArt } from '../commerce/art.js';
 import { variantLabel } from '../commerce/pricing.js';
 
 const router = express.Router();
@@ -211,12 +211,27 @@ router.get('/images/products/:slug/:n.svg', async (req, res) => {
 
   const product = await prisma.product.findUnique({
     where: { slug: req.params.slug },
-    select: { name: true, hue: true, imageCount: true, category: { select: { slug: true } } },
+    select: {
+      slug: true,
+      name: true,
+      hue: true,
+      imageCount: true,
+      category: { select: { slug: true } },
+    },
   });
   const n = Number.parseInt(req.params.n, 10);
   if (!product || !(n >= 1 && n <= product.imageCount)) throw notFound('Image not found.');
 
   res.type('image/svg+xml').send(productArt(product, n));
+});
+
+/** Category tile art. Same chaos flag: a broken asset pipeline breaks every image. */
+router.get('/images/categories/:slug.svg', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (await isEnabled('image_404')) throw notFound('Image not found.');
+  const svg = categoryArt(req.params.slug);
+  if (!svg) throw notFound('Image not found.');
+  res.type('image/svg+xml').send(svg);
 });
 
 export default router;

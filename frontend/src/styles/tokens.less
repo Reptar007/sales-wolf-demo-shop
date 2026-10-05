@@ -1,27 +1,52 @@
 // Design tokens. Every feature stylesheet imports this and nothing else shared.
+// Theme: a moonlit campsite — night indigo, ember orange, moon cream.
 
-@ink: #10121a;
-@ink-soft: #2a2e3b;
-@paper: #f7f6f3;
+@ink: #1b1838;
+@ink-soft: #3b3766;
+@paper: #fbf6ec;
 @surface: #ffffff;
-@muted: #6b7280;
-@line: #e3e1dc;
-@accent: #c2410c; // ember
-@accent-ink: #ffffff;
-@accent-soft: #fff1e8;
-@ok: #15803d;
-@ok-soft: #ecfdf3;
-@bad: #b91c1c;
-@bad-soft: #fef2f2;
-@warn: #a16207;
-@warn-soft: #fefce8;
+@muted: #6b6787;
+@line: #e9e1d1;
 
-@radius: 0.75rem;
-@radius-sm: 0.375rem;
+// Ember: bright, so it carries ink text (not white) for contrast.
+@accent: #ff7a45;
+@accent-ink: @ink;
+@accent-soft: #fff0e6;
+
+@night: #17153a;
+@night-2: #2c2870;
+@moon: #ffe8a3;
+@pine: #2f9e78;
+@berry: #ff5d8f;
+@sky: #8fa8ff;
+
+@ok: #15803d;
+@ok-soft: #e7f8ee;
+@bad: #c0262d;
+@bad-soft: #fff0f0;
+@warn: #a15c07;
+@warn-soft: #fff6dc;
+
+@radius: 1.25rem;
+@radius-sm: 0.75rem;
 @shadow:
-  0 1px 2px rgba(16, 18, 26, 0.06),
-  0 4px 16px rgba(16, 18, 26, 0.06);
-@max-width: 76rem;
+  0 1px 2px rgba(27, 24, 56, 0.06),
+  0 10px 30px rgba(27, 24, 56, 0.08);
+// The "sticker" look: a hard offset shadow in ink.
+@pop: 4px 4px 0 @ink;
+@pop-lg: 6px 6px 0 @ink;
+@max-width: 78rem;
+
+@font-display: 'Bricolage Grotesque Variable', 'DM Sans Variable', ui-sans-serif, system-ui,
+  sans-serif;
+@font-body:
+  'DM Sans Variable',
+  ui-sans-serif,
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  sans-serif;
 
 @phone: ~'(max-width: 640px)';
 @tablet: ~'(max-width: 960px)';
+@motion-ok: ~'(prefers-reduced-motion: no-preference)';
