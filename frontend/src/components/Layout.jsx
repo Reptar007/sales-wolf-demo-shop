@@ -68,7 +68,11 @@ export default function Layout() {
             ) : (
               <NavLink to="/signin">Sign in</NavLink>
             )}
-            <NavLink to="/cart" className="cart-link" aria-label={`Cart, ${itemCount} items`}>
+            <NavLink
+              to="/cart"
+              className="cart-link"
+              aria-label={`Cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`}
+            >
               Cart
               <span className="cart-link__count" data-testid="cart-count">
                 {itemCount}

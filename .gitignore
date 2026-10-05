@@ -6,3 +6,4 @@ dist/
 generated/
 *.log
 .DS_Store
+.claude/worktrees/
