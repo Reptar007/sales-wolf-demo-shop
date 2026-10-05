@@ -133,6 +133,9 @@ describe('accounts', { skip: !hasTestDatabase() && 'TEST_DATABASE_URL not set' }
       'sebastian@wolfmart.test': ['WM-100011', 'WM-100012'],
       'ricky@wolfmart.test': ['WM-100021', 'WM-100022'],
       'jun@wolfmart.test': ['WM-100031', 'WM-100032'],
+      'becca@wolfmart.test': ['WM-100041', 'WM-100042'],
+      'dion@wolfmart.test': ['WM-100051', 'WM-100052'],
+      'ian@wolfmart.test': ['WM-100061', 'WM-100062'],
     };
     const clients = {};
     for (const [email, expected] of Object.entries(accounts)) {

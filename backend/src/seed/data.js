@@ -533,6 +533,30 @@ export const DEMO_USERS = [
       order('WM-100032', 'fireside-throw', 'PLACED', 0),
     ],
   },
+  {
+    email: 'becca@wolfmart.test',
+    name: 'Becca',
+    history: [
+      order('WM-100041', 'alpha-rain-shell', 'DELIVERED', 21),
+      order('WM-100042', 'camp-percolator', 'SHIPPED', 2),
+    ],
+  },
+  {
+    email: 'dion@wolfmart.test',
+    name: 'Dion',
+    history: [
+      order('WM-100051', 'ridge-pack-45', 'DELIVERED', 35),
+      order('WM-100052', 'wolfpack-power-bank', 'PROCESSING', 1, 2),
+    ],
+  },
+  {
+    email: 'ian@wolfmart.test',
+    name: 'Ian',
+    history: [
+      order('WM-100061', 'den-sleeping-bag', 'DELIVERED', 28),
+      order('WM-100062', 'moonlight-lamp', 'PLACED', 0),
+    ],
+  },
   // Empty accounts, for showing a first-time customer.
   { email: 'alpha@wolfmart.test', name: 'Alex Alpha' },
   { email: 'pack@wolfmart.test', name: 'Pat Pack' },
