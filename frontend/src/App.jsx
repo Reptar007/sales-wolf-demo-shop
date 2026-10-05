@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import StatusPage from './pages/StatusPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import DemoControlPage from './pages/DemoControlPage.jsx';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
       </Route>
 
       {/* Full-screen tools, outside the storefront chrome. */}
+      <Route path="demo-control" element={<DemoControlPage />} />
     </Routes>
   );
 }
