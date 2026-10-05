@@ -67,6 +67,33 @@ test('an explicit denial beats the allowlist', () => {
   }
 });
 
+test("the internal toolkit's public domain is refused", () => {
+  assert.ok(NEVER_ALLOWED.includes('sales-wolf.com'));
+  for (const host of [
+    'sales-wolf.com',
+    'www.sales-wolf.com',
+    'SALES-WOLF.COM.',
+    'api.sales-wolf.com',
+  ]) {
+    assert.equal(isAllowedHost(host), false, `${host} must be blocked`);
+  }
+});
+
+test("the deny list never names this app's own hosts", () => {
+  // A careless pattern (say, 'sales-wolf') would read the demo's own Heroku
+  // hostname as the internal toolkit's. Exact-or-subdomain matching prevents it.
+  const own = [
+    'www.wolfmartdemo.com',
+    'wolfmartdemo.com',
+    'sales-wolf-demo-shop-412cd1b2d1fd.herokuapp.com',
+  ];
+  for (const host of own) {
+    for (const pattern of NEVER_ALLOWED) {
+      assert.ok(host !== pattern && !host.endsWith(`.${pattern}`), `${pattern} matches ${host}`);
+    }
+  }
+});
+
 test('fetch to SalesWolf rejects rather than connecting', async () => {
   await assert.rejects(
     () => fetch('https://saleswolf.com/api/opps'),
@@ -77,6 +104,11 @@ test('fetch to SalesWolf rejects rather than connecting', async () => {
 test('https.request to SalesWolf throws', () => {
   assert.throws(() => https.request('https://saleswolf.com/'), EgressBlockedError);
   assert.throws(() => https.request({ hostname: 'saleswolf.com', path: '/' }), EgressBlockedError);
+});
+
+test('fetch and https.request to sales-wolf.com are refused', async () => {
+  await assert.rejects(() => fetch('https://www.sales-wolf.com/'), /Egress blocked|fetch failed/);
+  assert.throws(() => https.request('https://www.sales-wolf.com/'), EgressBlockedError);
 });
 
 test('http.get to SalesWolf throws', () => {
