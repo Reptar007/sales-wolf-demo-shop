@@ -122,10 +122,16 @@ afterwards so the credential card stays true.
 - **Live chat (P3).** Shoppers get a chat widget on the storefront; you answer
   as the store's support agent from `/agent` (same passphrase). Useful for
   showing QA Wolf testing a real-time, two-party flow.
-- **AI shopping assistant (P4).** An assistant on the storefront that answers
-  product questions from the live catalog. It calls the Anthropic API, so it
-  needs `ANTHROPIC_API_KEY` on the app. Nothing else in the store depends on
-  that key.
+- **AI shopping assistant (P4).** The ✦ button above the chat launcher. It
+  searches the live catalog, checks stock, adds items to the shopper's real
+  cart (watch the header count change), and looks up the signed-in user's
+  orders. Try "Find a waterproof jacket under $150, then add it in medium."
+  It needs `ANTHROPIC_API_KEY` on the app; without it the widget says the
+  assistant is offline and nothing else is affected. Limits: 20 messages per
+  conversation ("Start over" resets), 30 per IP per hour, and a monthly spend
+  ceiling after which it switches itself off until next month.
+- **Answering chat from the same browser.** Open `/agent` in a second tab. The
+  storefront widget in that browser keeps acting as the customer.
 
 Both are wiped by **Reset demo data** and by the nightly reset, so no prospect
 can read a previous prospect's conversation.

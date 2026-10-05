@@ -155,8 +155,9 @@ heroku addons:create heroku-postgresql:essential-0 -a sales-wolf-demo-shop
 heroku config:set -a sales-wolf-demo-shop NODE_ENV=production \
   DEMO_JWT_SECRET="$(openssl rand -base64 32)" \
   DEMO_CONTROL_PASSPHRASE="<pick one; share it with the SE team only>"
-# Optional, for the AI assistant (P4):
-heroku config:set -a sales-wolf-demo-shop ANTHROPIC_API_KEY=<key>
+# Optional, for the AI assistant (P4). Budget is a hard monthly ceiling in USD.
+heroku config:set -a sales-wolf-demo-shop ANTHROPIC_API_KEY=<key> \
+  ASSISTANT_MONTHLY_BUDGET_USD=25
 git push heroku main
 ```
 
@@ -184,10 +185,15 @@ curl -s https://sales-wolf-demo-shop-*.herokuapp.com/api/health | grep egressAll
   and promo codes.
 - **P2 complete** — accounts, cart merge on sign-in, order history, saved
   addresses, password reset via the demo inbox.
-- **P3 complete** — live chat: a storefront chat widget answered by an SE from
-  `/agent`. Being merged in parallel.
-- **P4 complete** — AI shopping assistant on the storefront, backed by the
-  Anthropic API (the one permitted outbound host). Being merged in parallel.
+- **P3 complete** — live chat over socket.io (same origin, WebSocket only,
+  Origin-checked): a storefront widget answered by an SE from `/agent`, with
+  typing indicators, unread badges, history on reload, and reconnect.
+- **P4 complete** — Claude shopping assistant with four catalog tools
+  (search, stock, add to cart, the signed-in user's order status). Bounded by
+  per-IP (30/hour) and per-conversation (20) message caps and a monthly spend
+  ceiling (`ASSISTANT_MONTHLY_BUDGET_USD`, default $25) after which the route
+  disables itself. Without `ANTHROPIC_API_KEY` it shows as offline. Covered by
+  tests with a faked API; not yet exercised against the live API.
 - **P5 complete** — demo control panel (`/demo-control`), nightly reset, CI with
   a real Postgres, and the SE runbook.
 
