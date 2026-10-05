@@ -18,6 +18,7 @@ import {
 import { AccountOrderPage, AccountPage } from './pages/AccountPage.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
 import DemoControlPage from './pages/DemoControlPage.jsx';
+import AgentConsolePage from './pages/AgentConsolePage.jsx';
 
 export default function App() {
   return (
@@ -61,6 +62,7 @@ export default function App() {
 
       {/* Full-screen tools, outside the storefront chrome. */}
       <Route path="demo-control" element={<DemoControlPage />} />
+      <Route path="agent" element={<AgentConsolePage />} />
     </Routes>
   );
 }
