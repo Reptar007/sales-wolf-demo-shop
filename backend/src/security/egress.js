@@ -33,8 +33,16 @@ export const ALLOWED_HOSTS = Object.freeze(['api.anthropic.com']);
  * Not load-bearing — ALLOWED_HOSTS already denies these. Listed so that a block
  * against SalesWolf logs as a deliberate policy hit rather than an anonymous
  * default-deny, which is the difference between noticing an incident and not.
+ *
+ * `sales-wolf.com` (hyphenated) is the internal toolkit's public domain and
+ * `saleswolf.com` its name; both match subdomains too. Neither pattern matches
+ * this app's own hosts (`www.wolfmartdemo.com`, `sales-wolf-demo-shop-*.herokuapp.com`).
  */
-export const NEVER_ALLOWED = Object.freeze(['saleswolf.com', 'qa-sales-engineering.herokuapp.com']);
+export const NEVER_ALLOWED = Object.freeze([
+  'saleswolf.com',
+  'sales-wolf.com',
+  'qa-sales-engineering.herokuapp.com',
+]);
 
 export class EgressBlockedError extends Error {
   constructor(hostname) {
@@ -70,7 +78,13 @@ export function isAllowedHost(hostname) {
 
 /** Records every blocked attempt so an SSRF probe shows up in the logs. */
 export function reportBlocked(hostname) {
-  console.error(`[egress] BLOCKED outbound connection to ${hostname}`);
+  const host = normalize(hostname);
+  const internal = NEVER_ALLOWED.some((p) => matches(host, p));
+  console.error(
+    internal
+      ? `[egress] BLOCKED outbound connection to ${hostname} (internal toolkit host: policy violation)`
+      : `[egress] BLOCKED outbound connection to ${hostname}`,
+  );
 }
 
 /** Layer 1: undici, which backs global fetch. */

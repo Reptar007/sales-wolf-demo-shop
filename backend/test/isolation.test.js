@@ -23,11 +23,12 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
  * two apps is a reachable host, a shared credential, or an import, so those are
  * what this matches.
  *
- * Note the host pattern is `saleswolf.com`, no hyphen. This repo is named
- * `sales-wolf-demo-shop`; a fuzzier pattern would fail the build on the repo's
- * own name. Do not "fix" it to also catch `sales-wolf`.
+ * Note the host patterns are exact domains: `saleswolf.com` (no hyphen) and
+ * `sales-wolf.com` (the toolkit's public domain, `.com` included). This repo is
+ * named `sales-wolf-demo-shop`; a fuzzier pattern like `sales-wolf` would fail
+ * the build on the repo's own name. Do not "fix" it to be broader.
  */
-const FORBIDDEN_HOSTS = ['saleswolf.com', 'qa-sales-engineering'];
+const FORBIDDEN_HOSTS = ['saleswolf.com', 'sales-wolf.com', 'qa-sales-engineering'];
 
 /** SalesWolf credentials. Their presence here means a config var leaked across. */
 const FORBIDDEN_SECRETS = [
