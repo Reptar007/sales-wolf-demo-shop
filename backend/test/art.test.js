@@ -6,7 +6,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CATEGORY_ART, categoryArt, productArt } from '../src/commerce/art.js';
+import { CATEGORY_ART, COLOR_SWATCHES, categoryArt, productArt } from '../src/commerce/art.js';
 import { buildProducts } from '../src/seed/data.js';
 
 function problemsIn(svg) {
@@ -44,4 +44,23 @@ test('every category tile image is well-formed SVG', () => {
 test('product names are escaped into the SVG label', () => {
   const svg = productArt({ slug: 'x', name: 'Tom & "Jerry" <3', hue: 10 }, 1);
   assert.match(svg, /aria-label="Tom &amp; &quot;Jerry&quot; &lt;3"/);
+});
+
+test('a variant colour repaints the item but not the backdrop', () => {
+  const hoodie = { slug: 'howl-hoodie', name: 'Howl Hoodie', hue: 220 };
+  const plain = productArt(hoodie, 1);
+  const heather = productArt(hoodie, 1, 'Heather');
+  assert.notEqual(heather, plain);
+  assert.ok(heather.includes(COLOR_SWATCHES.Heather));
+  assert.ok(heather.includes('hsl(220 40% 22%)'), 'the ridge keeps the product hue');
+  assert.match(heather, /aria-label="Howl Hoodie, Heather"/);
+  assert.equal(productArt(hoodie, 1, 'Plaid'), plain, 'unknown colours fall back');
+  assert.deepEqual(problemsIn(heather), []);
+});
+
+test('every seeded colour has a swatch', () => {
+  const colors = new Set(
+    buildProducts().flatMap((p) => p.variants.map((v) => v.color).filter(Boolean)),
+  );
+  for (const color of colors) assert.ok(COLOR_SWATCHES[color], `missing swatch for ${color}`);
 });

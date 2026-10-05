@@ -2,7 +2,7 @@ import express from 'express';
 import { prisma } from '../db.js';
 import { isEnabled, sleep } from '../chaos/flags.js';
 import { notFound } from '../http/errors.js';
-import { categoryArt, productArt } from '../commerce/art.js';
+import { COLOR_SWATCHES, categoryArt, productArt } from '../commerce/art.js';
 import { variantLabel } from '../commerce/pricing.js';
 
 const router = express.Router();
@@ -176,6 +176,13 @@ router.get('/products/:slug', async (req, res) => {
       ...productSummary(product),
       description: product.description,
       imageCount: product.imageCount,
+      // Colour name → hex, matching what the product art paints for that colour.
+      swatches: Object.fromEntries(
+        [...new Set(product.variants.map((v) => v.color).filter(Boolean))].map((c) => [
+          c,
+          COLOR_SWATCHES[c] ?? null,
+        ]),
+      ),
       category: { slug: product.category.slug, name: product.category.name },
       variants: product.variants.map((v) => ({
         id: v.id,
@@ -217,12 +224,17 @@ router.get('/images/products/:slug/:n.svg', async (req, res) => {
       hue: true,
       imageCount: true,
       category: { select: { slug: true } },
+      variants: { select: { color: true } },
     },
   });
   const n = Number.parseInt(req.params.n, 10);
   if (!product || !(n >= 1 && n <= product.imageCount)) throw notFound('Image not found.');
 
-  res.type('image/svg+xml').send(productArt(product, n));
+  // Only a colour this product actually comes in; anything else gets the default art.
+  const colors = new Set(product.variants.map((v) => v.color).filter(Boolean));
+  const color = colors.has(req.query.color) ? req.query.color : undefined;
+
+  res.type('image/svg+xml').send(productArt(product, n, color));
 });
 
 /** Category tile art. Same chaos flag: a broken asset pipeline breaks every image. */

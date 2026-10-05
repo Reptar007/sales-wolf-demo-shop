@@ -487,14 +487,55 @@ export function buildProducts() {
  */
 export const DEMO_PASSWORD = 'WolfMart!2026';
 
+const order = (number, slug, status, daysAgo, quantity = 1) => ({
+  number,
+  slug,
+  status,
+  daysAgo,
+  quantity,
+});
+
+/**
+ * `demo@` is the generic account. Each SE also gets their own, so two people
+ * demoing at once never share a cart or order history. Add a teammate by
+ * adding a row; their order numbers just need to be unique.
+ */
 export const DEMO_USERS = [
   {
     email: 'demo@wolfmart.test',
     name: 'Dana Demo',
-    withHistory: true,
+    history: [
+      order('WM-100001', 'howl-hoodie', 'DELIVERED', 40),
+      order('WM-100002', 'cast-iron-skillet', 'SHIPPED', 3, 2),
+    ],
   },
-  { email: 'alpha@wolfmart.test', name: 'Alex Alpha', withHistory: false },
-  { email: 'pack@wolfmart.test', name: 'Pat Pack', withHistory: false },
+  {
+    email: 'sebastian@wolfmart.test',
+    name: 'Sebastian',
+    history: [
+      order('WM-100011', 'lone-wolf-tent', 'DELIVERED', 25),
+      order('WM-100012', 'howl-speaker', 'PROCESSING', 1),
+    ],
+  },
+  {
+    email: 'ricky@wolfmart.test',
+    name: 'Ricky',
+    history: [
+      order('WM-100021', 'ridgeline-boot', 'DELIVERED', 32),
+      order('WM-100022', 'insulated-bottle', 'SHIPPED', 4, 2),
+    ],
+  },
+  {
+    email: 'jun@wolfmart.test',
+    name: 'Jun',
+    history: [
+      order('WM-100031', 'trail-gps', 'DELIVERED', 18),
+      order('WM-100032', 'fireside-throw', 'PLACED', 0),
+    ],
+  },
+  // Empty accounts, for showing a first-time customer.
+  { email: 'alpha@wolfmart.test', name: 'Alex Alpha' },
+  { email: 'pack@wolfmart.test', name: 'Pat Pack' },
 ];
 
 export const PROMO_CODES = [

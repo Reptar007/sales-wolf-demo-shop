@@ -12,10 +12,10 @@ export default function DemoInboxPage() {
     <section className="page page--medium inbox">
       <header className="page__header">
         <div>
-          <h1>Demo inbox</h1>
+          <h1>Test mailbox</h1>
           <p className="muted">
-            WolfMart sends no real email. Messages from this browser and your signed-in account
-            appear here.
+            WolfMart sends no real email. Password reset links requested from this browser (or for
+            your signed-in account) land here instead.
           </p>
         </div>
         <button type="button" className="button button--ghost" onClick={reload} disabled={loading}>
@@ -26,7 +26,9 @@ export default function DemoInboxPage() {
       {data?.messages.length === 0 && (
         <div className="panel empty-state">
           <h2>No messages yet</h2>
-          <p className="muted">Place an order or request a password reset to see one here.</p>
+          <p className="muted">
+            Request a <Link to="/forgot-password">password reset</Link> to see one here.
+          </p>
         </div>
       )}
       <ul className="inbox__list">

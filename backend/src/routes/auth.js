@@ -109,7 +109,7 @@ router.post('/password/forgot', limited, async (req, res) => {
   }
   res.json({
     ok: true,
-    message: 'If that account exists, a reset link is on its way to the demo inbox.',
+    message: 'If that account exists, a reset link is on its way to the test mailbox.',
   });
 });
 

@@ -8,7 +8,9 @@ export const priceRange = (from, to) =>
 export const shortDate = (value) =>
   new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-export const productImage = (slug, n = 1) => `/api/images/products/${slug}/${n}.svg`;
+/** Product art; pass a variant colour to see the item painted in it. */
+export const productImage = (slug, n = 1, color) =>
+  `/api/images/products/${slug}/${n}.svg${color ? `?color=${encodeURIComponent(color)}` : ''}`;
 
 export const ORDER_STATUS_LABELS = {
   PLACED: 'Placed',

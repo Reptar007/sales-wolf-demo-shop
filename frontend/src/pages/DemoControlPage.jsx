@@ -259,7 +259,7 @@ function ResetData({ onDone }) {
       <h2 id="danger-zone-title">Reset demo data</h2>
       <p className="muted">
         Re-seeds the catalog, stock, and demo accounts, and turns every flag off. Wipes all orders,
-        carts, new accounts, the demo inbox, and chat. Runs automatically every night.
+        carts, new accounts, the test mailbox, and chat. Runs automatically every night.
       </p>
       <div aria-live="polite">
         {result && <p className={`alert alert--${result.tone}`}>{result.text}</p>}

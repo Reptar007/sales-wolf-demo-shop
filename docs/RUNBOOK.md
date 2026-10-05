@@ -76,11 +76,23 @@ real shopper would hit. Flags are off after every reset.
 
 Demo accounts (all use password **`WolfMart!2026`**):
 
-| Email                 | Notes                                                      |
-| --------------------- | ---------------------------------------------------------- |
-| `demo@wolfmart.test`  | Saved address and order history (`WM-100001`, `WM-100002`) |
-| `alpha@wolfmart.test` | Empty account                                              |
-| `pack@wolfmart.test`  | Empty account                                              |
+| Email                     | Notes                                                        |
+| ------------------------- | ------------------------------------------------------------ |
+| `sebastian@wolfmart.test` | Sebastian's own: address and orders `WM-100011`, `WM-100012` |
+| `ricky@wolfmart.test`     | Ricky's own: address and orders `WM-100021`, `WM-100022`     |
+| `jun@wolfmart.test`       | Jun's own: address and orders `WM-100031`, `WM-100032`       |
+| `demo@wolfmart.test`      | Shared generic account: `WM-100001`, `WM-100002`             |
+| `alpha@wolfmart.test`     | Empty account (a first-time customer)                        |
+| `pack@wolfmart.test`      | Empty account                                                |
+
+**Use your own account on calls.** Accounts share a cart and order history with
+anyone else signed into them, so two SEs on `demo@` at the same time will see
+each other's items. To add a teammate, add a row to `DEMO_USERS` in
+`backend/src/seed/data.js`; it appears after the next reset.
+
+**QA Wolf flows should sign up a fresh account per run** (e.g. a unique
+`run-<id>@wolfmart.test`) rather than reuse a seeded one, so parallel runs never
+share a cart.
 
 Demo cards (any future expiry, any CVC):
 
@@ -102,17 +114,18 @@ Promo codes:
 | `PACK20`   | $20 off orders of $100+  |
 | `HOWL2024` | Expired (shows an error) |
 
-## Demo inbox (password reset)
+## Test mailbox (password reset)
 
-WolfMart sends no real email. Messages a shopper would receive (order
-confirmations, password reset links) land in the **demo inbox** at
-`/demo-inbox`, linked from the footer.
+WolfMart sends no real email. The one message a shopper would get by email, the
+password reset link, lands in the **test mailbox** at `/demo-inbox` instead.
+Orders don't go there: they live on the confirmation page and in the account's
+order history.
 
-To show password reset: `/forgot-password` → enter the account email → open
-`/demo-inbox` → click **Choose a new password** → set a new one. The link is
-single-use and expires in an hour.
+To show password reset: `/forgot-password` → enter the account email → follow the
+**test mailbox** link → click **Choose a new password** → set a new one. The link
+is single-use and expires in an hour.
 
-The inbox shows only mail triggered from the same browser (plus mail for the
+The mailbox shows only mail triggered from the same browser (plus mail for the
 account signed in there), so a prospect never sees another visitor's messages.
 If you reset a seeded account's password during a call, **Reset demo data**
 afterwards so the credential card stays true.

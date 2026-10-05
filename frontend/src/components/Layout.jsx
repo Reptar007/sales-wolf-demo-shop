@@ -70,7 +70,7 @@ function AddedToast() {
     <div className="toast-region" role="status" aria-live="polite">
       {lastAdded && (
         <div className="toast" key={lastAdded.key}>
-          <img src={productImage(lastAdded.product.slug, 2)} alt="" />
+          <img src={productImage(lastAdded.product.slug, 2, lastAdded.color)} alt="" />
           <div>
             <p className="toast__title">Added to your pack!</p>
             <p className="toast__body">
@@ -199,7 +199,6 @@ export default function Layout() {
           </div>
           <nav aria-label="Footer">
             <Link to="/search?q=">Shop all</Link>
-            <Link to="/demo-inbox">Demo inbox</Link>
             <Link to="/status">System status</Link>
           </nav>
         </div>

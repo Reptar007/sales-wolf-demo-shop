@@ -128,6 +128,32 @@ describe('accounts', { skip: !hasTestDatabase() && 'TEST_DATABASE_URL not set' }
     assert.equal((await other.json('/api/account/orders/WM-100001')).status, 404);
   });
 
+  test('each SE has their own account, history, and cart', async () => {
+    const accounts = {
+      'sebastian@wolfmart.test': ['WM-100011', 'WM-100012'],
+      'ricky@wolfmart.test': ['WM-100021', 'WM-100022'],
+      'jun@wolfmart.test': ['WM-100031', 'WM-100032'],
+    };
+    const clients = {};
+    for (const [email, expected] of Object.entries(accounts)) {
+      const client = createClient(app.baseUrl);
+      assert.equal((await signIn(client, email)).status, 200, email);
+      const numbers = (await client.json('/api/account/orders')).body.orders.map((o) => o.number);
+      assert.deepEqual(numbers.sort(), expected, `${email} sees only their own orders`);
+      assert.equal((await client.json('/api/account/addresses')).body.addresses.length, 1);
+      assert.equal((await client.json('/api/account/orders/WM-100001')).status, 404);
+      clients[email] = client;
+    }
+
+    // One SE filling a cart doesn't touch another's.
+    const { body } = await clients['ricky@wolfmart.test'].json('/api/products/titanium-spork');
+    await clients['ricky@wolfmart.test'].json('/api/cart/items', {
+      method: 'POST',
+      body: { variantId: body.product.variants[0].id, quantity: 1 },
+    });
+    assert.equal((await clients['jun@wolfmart.test'].json('/api/cart')).body.cart.itemCount, 0);
+  });
+
   test('password reset through the demo inbox', async () => {
     const email = 'alpha@wolfmart.test';
     const newPassword = 'a-brand-new-password';

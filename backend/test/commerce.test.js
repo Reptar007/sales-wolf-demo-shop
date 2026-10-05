@@ -86,8 +86,22 @@ describe('commerce', { skip: !hasTestDatabase() && 'TEST_DATABASE_URL not set' }
     const stranger = await createClient(app.baseUrl).json(`/api/orders/${order.number}`);
     assert.equal(stranger.status, 404, 'another browser cannot read the order');
 
+    // Orders live in order history, not the test mailbox (password resets only).
     const inbox = await shopper.json('/api/inbox');
-    assert.ok(inbox.body.messages.some((m) => m.subject.includes(order.number)));
+    assert.deepEqual(inbox.body.messages, []);
+  });
+
+  test('product images follow the chosen colour', async () => {
+    const client = createClient(app.baseUrl);
+    const { body } = await client.json('/api/products/howl-hoodie');
+    assert.deepEqual(Object.keys(body.product.swatches).sort(), ['Black', 'Heather']);
+
+    const art = async (query) =>
+      (await client.request(`/api/images/products/howl-hoodie/1.svg${query}`)).text();
+    const heather = await art('?color=Heather');
+    assert.ok(heather.includes(body.product.swatches.Heather));
+    // A colour the product doesn't come in is ignored, not rendered.
+    assert.equal(await art('?color=Glacier'), await art(''));
   });
 
   test('a declined demo card does not place an order', async () => {
