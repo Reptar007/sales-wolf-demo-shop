@@ -6,6 +6,8 @@ switch on a live call and watch QA Wolf catch the regression.
 **This is a prop with a real backend.** Every flow genuinely works, because the
 demo's credibility comes from the failures being real.
 
+**Live:** <https://www.wolfmartdemo.com>
+
 Plan and phase breakdown: `docs/public-demo-site-plan.md` in the
 `sales-engineer-toolkit` repo.
 
@@ -178,8 +180,23 @@ step-by-step in [`docs/RUNBOOK.md`](docs/RUNBOOK.md#nightly-reset-heroku-schedul
 Confirm the boundary survived:
 
 ```bash
-curl -s https://sales-wolf-demo-shop-*.herokuapp.com/api/health | grep egressAllowlist
+curl -s https://www.wolfmartdemo.com/api/health | grep egressAllowlist
 ```
+
+### Domain
+
+The site lives on its **own registrable domain**, `wolfmartdemo.com` (Route 53),
+never on a subdomain of the internal toolkit's domain. That is rule 1 above: two
+hosts that share a parent domain can share cookies and count as "same-site" to
+the browser, which no control inside this app can prevent.
+
+- Route 53 hosted zone `wolfmartdemo.com`: `www` is a CNAME to the DNS target
+  from `heroku domains -a sales-wolf-demo-shop`.
+- HTTPS comes from Heroku Automatic Certificate Management
+  (`heroku certs:auto -a sales-wolf-demo-shop`), which renews on its own.
+- The bare `wolfmartdemo.com` is not served. Route 53 can't point an apex record
+  at Heroku (Alias records only target AWS resources), so share the `www` URL.
+- The old `*.herokuapp.com` URL keeps working.
 
 ## Status
 

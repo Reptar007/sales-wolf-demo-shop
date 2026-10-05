@@ -1,5 +1,7 @@
 # WolfMart SE runbook
 
+**Live:** <https://www.wolfmartdemo.com>
+
 How to run a WolfMart demo on a live call: break the store on purpose, show QA
 Wolf catching it, then put it back. Written for an SE picking this up cold.
 
