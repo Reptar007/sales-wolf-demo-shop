@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
+import AssistantWidget from './assistant/AssistantWidget.jsx';
 
 const CATEGORIES = [
   ['apparel', 'Apparel'],
@@ -106,6 +107,7 @@ export default function Layout() {
         </div>
       </footer>
       {/* Site-wide widgets (live chat P3, AI assistant P4) mount below. */}
+      <AssistantWidget />
     </div>
   );
 }

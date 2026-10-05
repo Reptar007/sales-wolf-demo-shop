@@ -7,6 +7,7 @@
 
 import { prisma } from '../db.js';
 import { enabledFlags } from '../chaos/flags.js';
+import { badRequest, conflict, notFound } from '../http/errors.js';
 import {
   FREE_SHIPPING_THRESHOLD_CENTS,
   computeTotals,
@@ -45,6 +46,49 @@ export async function findOrCreateCart(owner, client = prisma) {
     create: owner.userId ? { userId: owner.userId } : { visitorId: owner.visitorId },
     include: CART_INCLUDE,
   });
+}
+
+export function stockCheck(variant, quantity) {
+  if (variant.stock <= 0) {
+    throw conflict('OUT_OF_STOCK', `${variant.product.name} is out of stock.`, {
+      variantId: variant.id,
+    });
+  }
+  if (quantity > variant.stock) {
+    throw conflict('INSUFFICIENT_STOCK', `Only ${variant.stock} left of ${variant.product.name}.`, {
+      variantId: variant.id,
+      available: variant.stock,
+    });
+  }
+}
+
+/**
+ * Adds `quantity` of a variant to the owner's cart: the rules behind
+ * POST /api/cart/items, shared with the AI assistant's add_to_cart tool.
+ * Throws a shopper-safe HttpError when the variant is gone, the line would
+ * pass the per-line maximum, or stock runs short.
+ */
+export async function addItemToCart(owner, variantId, quantity) {
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
+    include: { product: { select: { name: true } } },
+  });
+  if (!variant) throw notFound('That product option no longer exists.');
+
+  const cart = await findOrCreateCart(owner);
+  const existing = cart.items.find((i) => i.variantId === variantId);
+  const next = (existing?.quantity ?? 0) + quantity;
+  if (next > MAX_LINE_QUANTITY) {
+    throw badRequest(`You can buy up to ${MAX_LINE_QUANTITY} of each item.`);
+  }
+  stockCheck(variant, next);
+
+  await prisma.cartItem.upsert({
+    where: { cartId_variantId: { cartId: cart.id, variantId } },
+    update: { quantity: next },
+    create: { cartId: cart.id, variantId, quantity },
+  });
+  return { variant, quantity: next };
 }
 
 /** Plain lines for pricing: one per cart item, at today's variant price. */
