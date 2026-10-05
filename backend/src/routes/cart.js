@@ -1,20 +1,14 @@
 import express from 'express';
 import { prisma } from '../db.js';
-import {
-  HttpError,
-  badRequest,
-  conflict,
-  notFound,
-  requireInt,
-  requireString,
-} from '../http/errors.js';
+import { HttpError, badRequest, notFound, requireInt, requireString } from '../http/errors.js';
 import {
   CART_INCLUDE,
   MAX_LINE_QUANTITY,
+  addItemToCart,
   findCart,
-  findOrCreateCart,
   ownerOf,
   serializeCart,
+  stockCheck,
 } from '../commerce/cart.js';
 import { SHIPPING_METHODS, promoProblem } from '../commerce/pricing.js';
 
@@ -38,45 +32,13 @@ async function ownedItem(req) {
   return item;
 }
 
-function stockCheck(variant, quantity) {
-  if (variant.stock <= 0) {
-    throw conflict('OUT_OF_STOCK', `${variant.product.name} is out of stock.`, {
-      variantId: variant.id,
-    });
-  }
-  if (quantity > variant.stock) {
-    throw conflict('INSUFFICIENT_STOCK', `Only ${variant.stock} left of ${variant.product.name}.`, {
-      variantId: variant.id,
-      available: variant.stock,
-    });
-  }
-}
-
 router.get('/', (req, res) => respondWithCart(req, res));
 
 router.post('/items', async (req, res) => {
   const variantId = requireString(req.body, 'variantId', { max: 40 });
   const quantity = requireInt(req.body, 'quantity', { min: 1, max: MAX_LINE_QUANTITY });
 
-  const variant = await prisma.productVariant.findUnique({
-    where: { id: variantId },
-    include: { product: { select: { name: true } } },
-  });
-  if (!variant) throw notFound('That product option no longer exists.');
-
-  const cart = await findOrCreateCart(ownerOf(req));
-  const existing = cart.items.find((i) => i.variantId === variantId);
-  const next = (existing?.quantity ?? 0) + quantity;
-  if (next > MAX_LINE_QUANTITY) {
-    throw badRequest(`You can buy up to ${MAX_LINE_QUANTITY} of each item.`);
-  }
-  stockCheck(variant, next);
-
-  await prisma.cartItem.upsert({
-    where: { cartId_variantId: { cartId: cart.id, variantId } },
-    update: { quantity: next },
-    create: { cartId: cart.id, variantId, quantity },
-  });
+  await addItemToCart(ownerOf(req), variantId, quantity);
   await respondWithCart(req, res, 201);
 });
 
