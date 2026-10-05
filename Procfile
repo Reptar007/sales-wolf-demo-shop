@@ -1,3 +1,3 @@
-# No release phase yet -- P0 uses no database. P1 restores:
-#   release: npx prisma migrate deploy --schema=prisma/schema.prisma
+# Migrations run once per deploy, before the new web dyno takes traffic.
+release: cd backend && npx prisma migrate deploy
 web: npm start

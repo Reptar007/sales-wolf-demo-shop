@@ -1,17 +1,24 @@
 import express from 'express';
 import healthRoutes from './health.js';
+import catalogRoutes from './catalog.js';
+import cartRoutes from './cart.js';
+import checkoutRoutes from './checkout.js';
+import authRoutes from './auth.js';
+import accountRoutes from './account.js';
+import inboxRoutes from './inbox.js';
 
 const router = express.Router();
 
 router.use('/health', healthRoutes);
+router.use('/', catalogRoutes);
+router.use('/cart', cartRoutes);
+router.use('/', checkoutRoutes);
+router.use('/auth', authRoutes);
+router.use('/account', accountRoutes);
+router.use('/inbox', inboxRoutes);
 
 router.get('/', (req, res) => {
-  res.json({
-    message: 'WolfMart demo shop API',
-    version: '0.1.0',
-    phase: 'P0 — isolation boundary only',
-    endpoints: { health: '/api/health' },
-  });
+  res.json({ message: 'WolfMart demo shop API', version: '0.2.0' });
 });
 
 export default router;

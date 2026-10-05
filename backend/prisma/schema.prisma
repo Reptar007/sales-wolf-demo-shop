@@ -1,0 +1,316 @@
+// WolfMart demo shop — its OWN database. Never SalesWolf's.
+//
+// Prisma 7: the connection URL lives in backend/prisma.config.js, and the
+// client is generated as TypeScript that Node 24 runs directly (type
+// stripping). The `pg` driver adapter means no Rust engine download, which is
+// what hung CI and the Heroku build in P0.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Catalog ──────────────────────────────────────────────────────────────────
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String
+  sortOrder   Int       @default(0)
+  products    Product[]
+}
+
+model Product {
+  id             String           @id @default(cuid())
+  slug           String           @unique
+  name           String
+  description    String
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id])
+  basePriceCents Int
+  /// Drives the generated product artwork, so images need no external host.
+  hue            Int
+  imageCount     Int              @default(3)
+  featured       Boolean          @default(false)
+  ratingAverage  Float            @default(0)
+  ratingCount    Int              @default(0)
+  createdAt      DateTime         @default(now())
+  variants       ProductVariant[]
+  reviews        Review[]
+
+  @@index([categoryId])
+}
+
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku        String      @unique
+  size       String?
+  color      String?
+  priceCents Int
+  stock      Int
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  author    String
+  rating    Int
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+// ── Commerce ─────────────────────────────────────────────────────────────────
+
+model Cart {
+  id          String     @id @default(cuid())
+  /// Anonymous carts are keyed by the visitor cookie; signed-in carts by user.
+  visitorId   String?    @unique
+  userId      String?    @unique
+  user        DemoUser?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promoCodeId String?
+  promoCode   PromoCode? @relation(fields: [promoCodeId], references: [id])
+  items       CartItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int
+  createdAt DateTime       @default(now())
+
+  @@unique([cartId, variantId])
+}
+
+model PromoCode {
+  id               String    @id @default(cuid())
+  code             String    @unique
+  description      String
+  percentOff       Int?
+  amountOffCents   Int?
+  minSubtotalCents Int       @default(0)
+  expiresAt        DateTime?
+  active           Boolean   @default(true)
+  carts            Cart[]
+}
+
+enum OrderStatus {
+  PLACED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  number         String      @unique
+  userId         String?
+  user           DemoUser?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Lets a guest see their own confirmation page without an account.
+  visitorId      String?
+  email          String
+  status         OrderStatus @default(PLACED)
+  subtotalCents  Int
+  discountCents  Int
+  shippingCents  Int
+  taxCents       Int
+  totalCents     Int
+  promoCode      String?
+  shippingMethod String
+  shipName       String
+  shipLine1      String
+  shipLine2      String?
+  shipCity       String
+  shipRegion     String
+  shipPostalCode String
+  shipCountry    String
+  /// Brand + last four only. Card numbers never reach the server at all.
+  paymentBrand   String
+  paymentLast4   String
+  createdAt      DateTime    @default(now())
+  items          OrderItem[]
+
+  @@index([userId])
+  @@index([visitorId])
+}
+
+model OrderItem {
+  id             String          @id @default(cuid())
+  orderId        String
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId      String?
+  variant        ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  productSlug    String
+  productName    String
+  variantLabel   String
+  unitPriceCents Int
+  quantity       Int
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  user       DemoUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String
+  name       String
+  line1      String
+  line2      String?
+  city       String
+  region     String
+  postalCode String
+  country    String   @default("US")
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ── Identity ─────────────────────────────────────────────────────────────────
+
+model DemoUser {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  name                String
+  passwordHash        String
+  createdAt           DateTime             @default(now())
+  cart                Cart?
+  orders              Order[]
+  addresses           Address[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      DemoUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SHA-256 of the token. The raw token only ever exists in the inbox link.
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+/// Stands in for email delivery, so an SE can finish a password reset (or show
+/// an order confirmation) live on a call. Surfaced at /demo-inbox, scoped to
+/// the browser that triggered it or the signed-in account — never by typing
+/// an address, so a prospect's real email can't be read by the next visitor.
+model InboxMessage {
+  id        String   @id @default(cuid())
+  visitorId String?
+  to        String
+  subject   String
+  body      String
+  linkLabel String?
+  linkPath  String?
+  createdAt DateTime @default(now())
+
+  @@index([to])
+  @@index([visitorId])
+}
+
+// ── Live chat ────────────────────────────────────────────────────────────────
+
+enum ChatStatus {
+  OPEN
+  CLOSED
+}
+
+enum ChatSender {
+  CUSTOMER
+  AGENT
+  SYSTEM
+}
+
+model ChatConversation {
+  id             String        @id @default(cuid())
+  visitorId      String
+  userId         String?
+  customerName   String
+  status         ChatStatus    @default(OPEN)
+  agentUnread    Int           @default(0)
+  customerUnread Int           @default(0)
+  lastMessageAt  DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+  messages       ChatMessage[]
+
+  @@index([visitorId])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         ChatSender
+  body           String
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+}
+
+// ── AI assistant ─────────────────────────────────────────────────────────────
+
+model AssistantSession {
+  id           String             @id @default(cuid())
+  visitorId    String
+  ipHash       String
+  userId       String?
+  messageCount Int                @default(0)
+  inputTokens  Int                @default(0)
+  outputTokens Int                @default(0)
+  /// Millionths of a dollar, so the monthly ceiling can sum exact integers.
+  costMicros   Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  messages     AssistantMessage[]
+
+  @@index([visitorId])
+  @@index([createdAt])
+}
+
+model AssistantMessage {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   AssistantSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   Json
+  createdAt DateTime         @default(now())
+
+  @@index([sessionId])
+}
+
+// ── Demo ─────────────────────────────────────────────────────────────────────
+
+/// A deliberate bug an SE can switch on live. See docs §6.4.
+model ChaosFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  label       String
+  description String
+  /// What QA Wolf catches when this is on — doubles as demo script copy.
+  proves      String
+  enabled     Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
