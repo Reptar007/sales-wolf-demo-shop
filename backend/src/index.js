@@ -14,44 +14,25 @@ installEgressAllowlist();
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
-import express from 'express';
-import serveStatic from 'serve-static';
-import { securityHeaders } from './security/headers.js';
-import apiRoutes from './routes/api.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: resolve(__dirname, '../../.env') });
-dotenv.config();
+dotenv.config({ path: resolve(__dirname, '../../.env'), quiet: true });
+dotenv.config({ quiet: true });
+
+// Imported after dotenv so modules that read config at load see it.
+const { createApp } = await import('./app.js');
+const { attachChat } = await import('./chat/socket.js');
 
 const PORT = process.env.PORT || 7072;
-const app = express();
-
-// No CORS middleware on purpose. This app is same-origin only; opening it up
-// would let another site drive the demo's API from a page we don't control.
-app.use(securityHeaders);
-app.use(express.json({ limit: '1mb' }));
-
-const frontendDistPath = resolve(__dirname, '../../frontend/dist');
-app.use(serveStatic(frontendDistPath, { fallthrough: true, index: false }));
-
-app.use('/api', apiRoutes);
-
-app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(resolve(frontendDistPath, 'index.html'), (error) => {
-    if (error) {
-      res.status(404).send('Frontend not built. Run npm run build first.');
-    }
-  });
-});
-
-// eslint-disable-next-line no-unused-vars -- Express identifies error handlers by arity.
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(error.status || 500).json({ error: 'Internal server error' });
-});
+const app = createApp();
 
 assertEgressAllowlistInstalled();
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`WolfMart demo shop listening on port ${PORT}`);
 });
+
+// Live chat shares the HTTP server (same origin, same port). See chat/socket.js.
+attachChat(server);
+
+export default server;

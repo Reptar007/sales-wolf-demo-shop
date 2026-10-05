@@ -6,8 +6,9 @@ on:
   pull_request:
 
 jobs:
-  # The isolation guard runs first and on its own. If WolfMart has grown a link
-  # to SalesWolf, that is the finding — not a lint error buried under it.
+  # The isolation guard runs first and on its own, with no database. If WolfMart
+  # has grown a link to SalesWolf, that is the finding — not a lint error or a
+  # Postgres hiccup buried under it.
   isolation:
     name: isolation
     runs-on: ubuntu-latest
@@ -18,6 +19,47 @@ jobs:
         with:
           node-version: 24.16.0
       - run: npm ci
+        working-directory: backend
+      - run: npm run test:isolation
+        working-directory: backend
+
+  # The whole backend suite against a real, throwaway Postgres: every chaos
+  # flag both ways, the P1/P2 flows, and the isolation guard again.
+  api:
+    name: api
+    needs: isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: wolfmart
+          POSTGRES_PASSWORD: wolfmart
+          POSTGRES_DB: wolfmart_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wolfmart -d wolfmart_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # CI-only values for a database that exists for the length of this job.
+      # Never this app's real secrets, and never another app's.
+      DATABASE_URL: postgresql://wolfmart:wolfmart@localhost:5432/wolfmart_test
+      TEST_DATABASE_URL: postgresql://wolfmart:wolfmart@localhost:5432/wolfmart_test
+      DEMO_JWT_SECRET: ci-only-jwt-secret-not-used-anywhere-else
+      DEMO_CONTROL_PASSPHRASE: ci-only-passphrase
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.16.0
+      # postinstall runs `prisma generate`, which needs no database.
+      - run: npm ci
+        working-directory: backend
+      - run: npx prisma migrate deploy
         working-directory: backend
       - run: npm test
         working-directory: backend

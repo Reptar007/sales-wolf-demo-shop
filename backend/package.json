@@ -10,15 +10,31 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node --test 'test/*.test.js'"
+    "test": "node --test --test-concurrency=1 'test/*.test.js'",
+    "test:isolation": "node --test test/isolation.test.js test/egress.test.js",
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "demo:reset": "node src/seed/run.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "bcryptjs": "^3.0.3",
+    "cookie": "^2.0.1",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1",
+    "prisma": "^7.10.0",
     "serve-static": "^2.2.0",
+    "socket.io": "^4.8.4",
     "undici": "^7.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "socket.io-client": "^4.8.4"
   }
 }

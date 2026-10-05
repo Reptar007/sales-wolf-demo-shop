@@ -1,53 +1,68 @@
-import { useEffect, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import Layout from './components/Layout.jsx';
+import StatusPage from './pages/StatusPage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
+import HomePage from './pages/HomePage.jsx';
+import CatalogPage from './pages/CatalogPage.jsx';
+import ProductPage from './pages/ProductPage.jsx';
+import CartPage from './pages/CartPage.jsx';
+import CheckoutPage from './pages/CheckoutPage.jsx';
+import OrderConfirmationPage from './pages/OrderConfirmationPage.jsx';
+import DemoInboxPage from './pages/DemoInboxPage.jsx';
+import {
+  ForgotPasswordPage,
+  ResetPasswordPage,
+  SignInPage,
+  SignUpPage,
+} from './pages/AuthPages.jsx';
+import { AccountOrderPage, AccountPage } from './pages/AccountPage.jsx';
+import RequireAuth from './components/RequireAuth.jsx';
+import DemoControlPage from './pages/DemoControlPage.jsx';
+import AgentConsolePage from './pages/AgentConsolePage.jsx';
 
-/**
- * P0 placeholder.
- *
- * Deliberately not a marketing splash: it reports the isolation boundary's live
- * status, so "is the deploy healthy and still isolated?" is answerable by
- * opening the URL. The storefront replaces this in P1.
- */
 export default function App() {
-  const [health, setHealth] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((response) => {
-        if (!response.ok) throw new Error(`Health check failed: ${response.status}`);
-        return response.json();
-      })
-      .then(setHealth)
-      .catch((cause) => setError(cause.message));
-  }, []);
-
-  const egress = health?.egressAllowlist;
-
   return (
-    <main className="boot">
-      <p className="boot__eyebrow">QA Wolf demo environment</p>
-      <h1 className="boot__title">WolfMart</h1>
-      <p className="boot__lede">
-        A storefront built to be broken on purpose. Phase P0 — the isolation boundary is in place
-        and the storefront lands next.
-      </p>
+    <Routes>
+      <Route element={<Layout />}>
+        {/* P1 — storefront */}
+        <Route index element={<HomePage />} />
+        <Route path="search" element={<CatalogPage mode="search" />} />
+        <Route path="c/:category" element={<CatalogPage key="category" mode="category" />} />
+        <Route path="p/:slug" element={<ProductPage />} />
+        <Route path="cart" element={<CartPage />} />
+        <Route path="checkout" element={<CheckoutPage />} />
+        <Route path="order/:number" element={<OrderConfirmationPage />} />
 
-      <section className="boot__panel">
-        <h2 className="boot__panel-title">Boundary status</h2>
-        {error && <p className="boot__row boot__row--bad">Unreachable — {error}</p>}
-        {!error && !health && <p className="boot__row">Checking…</p>}
-        {health && (
-          <ul className="boot__list">
-            <li className="boot__row boot__row--ok">Server healthy ({health.environment})</li>
-            <li className={`boot__row boot__row--${egress?.installed ? 'ok' : 'bad'}`}>
-              Egress allowlist {egress?.installed ? 'active' : 'NOT ACTIVE'}
-            </li>
-            <li className="boot__row">
-              Outbound permitted: <code>{egress?.allowedHosts?.join(', ') || 'none'}</code>
-            </li>
-          </ul>
-        )}
-      </section>
-    </main>
+        {/* P2 — account */}
+        <Route path="signin" element={<SignInPage />} />
+        <Route path="signup" element={<SignUpPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="account"
+          element={
+            <RequireAuth>
+              <AccountPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="account/orders/:number"
+          element={
+            <RequireAuth>
+              <AccountOrderPage />
+            </RequireAuth>
+          }
+        />
+        <Route path="demo-inbox" element={<DemoInboxPage />} />
+
+        <Route path="status" element={<StatusPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+
+      {/* Full-screen tools, outside the storefront chrome. */}
+      <Route path="demo-control" element={<DemoControlPage />} />
+      <Route path="agent" element={<AgentConsolePage />} />
+    </Routes>
   );
 }

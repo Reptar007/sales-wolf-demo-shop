@@ -1,0 +1,262 @@
+@import './tokens.less';
+
+// Demo control (/demo-control). Used live on calls: calm, legible at a glance,
+// with the state of every flag readable from across a shared screen.
+
+.demo-control {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+
+  @media @phone {
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  &__bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__tools {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__summary {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    margin-bottom: 1rem;
+    background: @surface;
+    border: 1px solid @line;
+    border-radius: @radius;
+    box-shadow: @shadow;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+
+    &--active {
+      border-color: fade(@accent, 45%);
+      background: @accent-soft;
+    }
+  }
+
+  &__count {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+
+  &__dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    flex: none;
+
+    &--ok {
+      background: @ok;
+    }
+
+    &--on {
+      background: @accent;
+    }
+  }
+
+  &__reset {
+    min-width: 8.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  &__notice:empty {
+    display: none;
+  }
+}
+
+.flag-list {
+  list-style: none;
+  margin: 0 0 2.5rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+  gap: 1rem;
+}
+
+.flag-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: @surface;
+  border: 1px solid @line;
+  border-left: 4px solid @line;
+  border-radius: @radius;
+  padding: 1.125rem 1.25rem;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+
+  &--on {
+    border-color: fade(@accent, 45%);
+    border-left-color: @accent;
+    background: lighten(@accent-soft, 1%);
+  }
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__label {
+    margin: 0;
+    font-size: 1.0625rem;
+  }
+
+  &__breaks,
+  &__proves {
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+
+  &__proves {
+    padding: 0.625rem 0.75rem;
+    background: @paper;
+    border-radius: @radius-sm;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  &--on &__proves {
+    background: @surface;
+  }
+
+  &__kicker {
+    display: block;
+    margin-bottom: 0.125rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: @muted;
+  }
+
+  &__key {
+    margin: auto 0 0;
+    font-size: 0.8125rem;
+    color: @muted;
+  }
+}
+
+// role="switch" toggle. Big enough to hit first time while talking.
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  padding: 0.25rem;
+  margin: -0.25rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+
+  &__track {
+    position: relative;
+    width: 3rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: #cfd2d8;
+    transition: background 0.15s;
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 0.1875rem;
+    left: 0.1875rem;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(16, 18, 26, 0.25);
+    transition: transform 0.15s;
+  }
+
+  &__state {
+    min-width: 1.75rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: @muted;
+  }
+
+  &[aria-checked='true'] &__track {
+    background: @accent;
+  }
+
+  &[aria-checked='true'] &__thumb {
+    transform: translateX(1.25rem);
+  }
+
+  &[aria-checked='true'] &__state {
+    color: @accent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__track,
+    &__thumb {
+      transition: none;
+    }
+  }
+}
+
+.danger-zone {
+  border: 1px solid fade(@bad, 30%);
+  border-radius: @radius;
+  padding: 1.25rem 1.5rem;
+  background: @surface;
+
+  h2 {
+    margin: 0 0 0.375rem;
+    font-size: 1.0625rem;
+    color: @bad;
+  }
+
+  > p {
+    margin: 0 0 1rem;
+    font-size: 0.9375rem;
+  }
+
+  &__confirm {
+    padding: 1rem;
+    border-radius: @radius-sm;
+    background: @bad-soft;
+
+    p {
+      margin: 0 0 0.75rem;
+    }
+  }
+}
+
+.button--danger-solid {
+  background: @bad;
+  border-color: @bad;
+  color: #fff;
+}
