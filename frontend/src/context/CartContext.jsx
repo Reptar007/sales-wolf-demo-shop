@@ -11,6 +11,8 @@ const CartContext = createContext(null);
 export function CartProvider({ children }) {
   const { user, ready } = useAuth();
   const [cart, setCart] = useState(null);
+  // Drives the "added to cart" toast and the badge pop in the header.
+  const [lastAdded, setLastAdded] = useState(null);
 
   const refresh = useCallback(async () => {
     const data = await api('/cart');
@@ -35,15 +37,31 @@ export function CartProvider({ children }) {
       itemCount: cart?.itemCount ?? 0,
       refresh,
       setCart,
-      addItem: (variantId, quantity = 1) =>
-        mutate('/cart/items', { method: 'POST', body: { variantId, quantity } }),
+      lastAdded,
+      dismissLastAdded: () => setLastAdded(null),
+      addItem: async (variantId, quantity = 1) => {
+        const next = await mutate('/cart/items', {
+          method: 'POST',
+          body: { variantId, quantity },
+        });
+        const line = next.items.find((i) => i.variant.id === variantId);
+        if (line) {
+          setLastAdded({
+            key: Date.now(),
+            quantity,
+            product: line.product,
+            label: line.variant.label,
+          });
+        }
+        return next;
+      },
       updateItem: (itemId, quantity) =>
         mutate(`/cart/items/${itemId}`, { method: 'PATCH', body: { quantity } }),
       removeItem: (itemId) => mutate(`/cart/items/${itemId}`, { method: 'DELETE' }),
       applyPromo: (code) => mutate('/cart/promo', { method: 'POST', body: { code } }),
       removePromo: () => mutate('/cart/promo', { method: 'DELETE' }),
     }),
-    [cart, refresh, mutate],
+    [cart, lastAdded, refresh, mutate],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

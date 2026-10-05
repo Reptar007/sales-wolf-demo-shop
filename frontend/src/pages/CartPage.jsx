@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import OrderSummary from '../components/OrderSummary.jsx';
+import { WolfMark } from '../components/brand/Logo.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { money, productImage } from '../lib/format.js';
 
@@ -137,6 +138,7 @@ export default function CartPage() {
   if (cart.items.length === 0) {
     return (
       <section className="page page--narrow empty-state">
+        <WolfMark size={96} className="empty-state__art" />
         <h1>Your cart is empty</h1>
         <p className="muted">Find something worth howling about.</p>
         <Link className="button" to="/">

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard.jsx';
 import { useApi } from '../hooks/useApi.js';
@@ -32,6 +33,10 @@ export default function CatalogPage({ mode }) {
   };
 
   const { data, error, loading } = useApi(`/products${toQuery(filters)}`);
+  // Open beside the results on wide screens; a tap-to-open drawer on phones.
+  const [filtersOpen, setFiltersOpen] = useState(
+    () => typeof window === 'undefined' || window.matchMedia('(min-width: 961px)').matches,
+  );
 
   function update(changes) {
     const next = new URLSearchParams(params);
@@ -77,124 +82,133 @@ export default function CatalogPage({ mode }) {
       </header>
 
       <div className="catalog__layout">
-        <aside className="filters" aria-label="Filters">
-          {mode !== 'category' && facets && (
-            <fieldset className="filters__group">
-              <legend>Category</legend>
-              <label className="checkbox">
-                <input
-                  type="radio"
-                  name="category"
-                  checked={!category}
-                  onChange={() => update({ category: '' })}
-                />
-                All
-              </label>
-              {facets.categories.map((c) => (
-                <label key={c.slug} className="checkbox">
+        <details
+          className="filters-panel"
+          open={filtersOpen}
+          onToggle={(e) => setFiltersOpen(e.currentTarget.open)}
+        >
+          <summary className="filters-panel__toggle">
+            Filters{activeFilters.length > 0 && ` (${activeFilters.length})`}
+          </summary>
+          <aside className="filters" aria-label="Filters">
+            {mode !== 'category' && facets && (
+              <fieldset className="filters__group">
+                <legend>Category</legend>
+                <label className="checkbox">
                   <input
                     type="radio"
                     name="category"
-                    checked={category === c.slug}
-                    onChange={() => update({ category: c.slug })}
+                    checked={!category}
+                    onChange={() => update({ category: '' })}
                   />
-                  {c.name} <span className="muted">({c.count})</span>
+                  All
                 </label>
-              ))}
+                {facets.categories.map((c) => (
+                  <label key={c.slug} className="checkbox">
+                    <input
+                      type="radio"
+                      name="category"
+                      checked={category === c.slug}
+                      onChange={() => update({ category: c.slug })}
+                    />
+                    {c.name} <span className="muted">({c.count})</span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
+
+            <fieldset className="filters__group">
+              <legend>Availability</legend>
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={filters.inStock === '1'}
+                  onChange={(e) => update({ inStock: e.target.checked ? '1' : '' })}
+                />
+                In stock only
+              </label>
             </fieldset>
-          )}
 
-          <fieldset className="filters__group">
-            <legend>Availability</legend>
-            <label className="checkbox">
-              <input
-                type="checkbox"
-                checked={filters.inStock === '1'}
-                onChange={(e) => update({ inStock: e.target.checked ? '1' : '' })}
-              />
-              In stock only
-            </label>
-          </fieldset>
+            <fieldset className="filters__group">
+              <legend>Price</legend>
+              <form
+                key={`${filters.minPrice}-${filters.maxPrice}`}
+                className="filters__price"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = new FormData(e.currentTarget);
+                  update({ minPrice: form.get('minPrice'), maxPrice: form.get('maxPrice') });
+                }}
+              >
+                <label>
+                  <span className="visually-hidden">Minimum price</span>
+                  <input
+                    name="minPrice"
+                    type="number"
+                    min="0"
+                    placeholder="$ min"
+                    defaultValue={filters.minPrice}
+                  />
+                </label>
+                <label>
+                  <span className="visually-hidden">Maximum price</span>
+                  <input
+                    name="maxPrice"
+                    type="number"
+                    min="0"
+                    placeholder="$ max"
+                    defaultValue={filters.maxPrice}
+                  />
+                </label>
+                <button className="button button--small button--ghost" type="submit">
+                  Apply
+                </button>
+              </form>
+            </fieldset>
 
-          <fieldset className="filters__group">
-            <legend>Price</legend>
-            <form
-              key={`${filters.minPrice}-${filters.maxPrice}`}
-              className="filters__price"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = new FormData(e.currentTarget);
-                update({ minPrice: form.get('minPrice'), maxPrice: form.get('maxPrice') });
-              }}
-            >
-              <label>
-                <span className="visually-hidden">Minimum price</span>
-                <input
-                  name="minPrice"
-                  type="number"
-                  min="0"
-                  placeholder="$ min"
-                  defaultValue={filters.minPrice}
-                />
-              </label>
-              <label>
-                <span className="visually-hidden">Maximum price</span>
-                <input
-                  name="maxPrice"
-                  type="number"
-                  min="0"
-                  placeholder="$ max"
-                  defaultValue={filters.maxPrice}
-                />
-              </label>
-              <button className="button button--small button--ghost" type="submit">
-                Apply
+            {facets?.colors.length > 0 && (
+              <fieldset className="filters__group">
+                <legend>Color</legend>
+                <select
+                  aria-label="Color"
+                  value={filters.color}
+                  onChange={(e) => update({ color: e.target.value })}
+                >
+                  <option value="">Any color</option>
+                  {facets.colors.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+              </fieldset>
+            )}
+
+            {facets?.sizes.length > 0 && (
+              <fieldset className="filters__group">
+                <legend>Size</legend>
+                <select
+                  aria-label="Size"
+                  value={filters.size}
+                  onChange={(e) => update({ size: e.target.value })}
+                >
+                  <option value="">Any size</option>
+                  {facets.sizes.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
+                </select>
+              </fieldset>
+            )}
+
+            {activeFilters.length > 0 && (
+              <button
+                type="button"
+                className="link-button"
+                onClick={() => update(Object.fromEntries(activeFilters.map((k) => [k, ''])))}
+              >
+                Clear filters
               </button>
-            </form>
-          </fieldset>
-
-          {facets?.colors.length > 0 && (
-            <fieldset className="filters__group">
-              <legend>Color</legend>
-              <select
-                aria-label="Color"
-                value={filters.color}
-                onChange={(e) => update({ color: e.target.value })}
-              >
-                <option value="">Any color</option>
-                {facets.colors.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </fieldset>
-          )}
-
-          {facets?.sizes.length > 0 && (
-            <fieldset className="filters__group">
-              <legend>Size</legend>
-              <select
-                aria-label="Size"
-                value={filters.size}
-                onChange={(e) => update({ size: e.target.value })}
-              >
-                <option value="">Any size</option>
-                {facets.sizes.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </fieldset>
-          )}
-
-          {activeFilters.length > 0 && (
-            <button
-              type="button"
-              className="link-button"
-              onClick={() => update(Object.fromEntries(activeFilters.map((k) => [k, ''])))}
-            >
-              Clear filters
-            </button>
-          )}
-        </aside>
+            )}
+          </aside>
+        </details>
 
         <section className="catalog__results" aria-busy={loading}>
           {error && <p className="alert alert--error">{error.message}</p>}
