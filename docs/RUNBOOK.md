@@ -81,6 +81,9 @@ Demo accounts (all use password **`WolfMart!2026`**):
 | `sebastian@wolfmart.test` | Sebastian's own: address and orders `WM-100011`, `WM-100012` |
 | `ricky@wolfmart.test`     | Ricky's own: address and orders `WM-100021`, `WM-100022`     |
 | `jun@wolfmart.test`       | Jun's own: address and orders `WM-100031`, `WM-100032`       |
+| `becca@wolfmart.test`     | Becca's own: address and orders `WM-100041`, `WM-100042`     |
+| `dion@wolfmart.test`      | Dion's own: address and orders `WM-100051`, `WM-100052`      |
+| `ian@wolfmart.test`       | Ian's own: address and orders `WM-100061`, `WM-100062`       |
 | `demo@wolfmart.test`      | Shared generic account: `WM-100001`, `WM-100002`             |
 | `alpha@wolfmart.test`     | Empty account (a first-time customer)                        |
 | `pack@wolfmart.test`      | Empty account                                                |

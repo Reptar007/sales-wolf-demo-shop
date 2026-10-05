@@ -98,7 +98,8 @@ the same test database.
 ## Demo credentials
 
 Every seeded account uses the password `WolfMart!2026`. Each SE has their own
-(`sebastian@`, `ricky@`, `jun@wolfmart.test`, with order history) so simultaneous
+(`sebastian@`, `ricky@`, `jun@`, `becca@`, `dion@`, `ian@wolfmart.test`, each with order
+history) so simultaneous
 demos never share a cart; `demo@wolfmart.test` is the generic one, and
 `alpha@`/`pack@` are empty. Demo cards,
 promo codes, the flag-by-flag demo script, and the pre-call checklist are in
