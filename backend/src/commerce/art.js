@@ -327,12 +327,51 @@ export const CATEGORY_ART = {
   tech: { glyph: 'speaker', hue: 200 },
 };
 
-function palette(hue) {
+/**
+ * What each seeded variant colour looks like. The product page uses these for
+ * its swatches too (via the product API), so picker and picture always agree.
+ */
+export const COLOR_SWATCHES = Object.freeze({
+  Black: '#3a3850',
+  Heather: '#a7a3b5',
+  Charcoal: '#55535f',
+  Rust: '#c4552b',
+  Moss: '#7a8f3a',
+  Grey: '#9aa0a6',
+  Navy: '#2f3f7a',
+  Slate: '#5f7385',
+  Ember: '#ff7a45',
+  Red: '#d6343b',
+  Forest: '#2f6b45',
+  Ink: '#2c2870',
+  Clay: '#c47a5a',
+  Glacier: '#9fd8ef',
+  Pine: '#3c8a63',
+  Dusk: '#8a6fb5',
+  Orange: '#ff8c2a',
+});
+
+/** Mixes a #rrggbb colour toward white (amount > 0) or black (amount < 0). */
+function shade(hex, amount) {
+  const target = amount > 0 ? 255 : 0;
+  const t = Math.abs(amount);
+  const channels = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+  const mixed = channels.map((c) => Math.round(c + (target - c) * t));
+  return `#${mixed.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/** The item is painted in its variant colour when one is chosen; the backdrop keeps the product hue. */
+function palette(hue, color) {
+  const accent = `hsl(${(hue + 165) % 360} 90% 62%)`;
+  const swatch = COLOR_SWATCHES[color];
+  if (swatch) {
+    return { main: swatch, light: shade(swatch, 0.6), dark: shade(swatch, -0.45), accent };
+  }
   return {
     main: `hsl(${hue} 72% 62%)`,
     light: `hsl(${hue} 85% 86%)`,
     dark: `hsl(${hue} 45% 26%)`,
-    accent: `hsl(${(hue + 165) % 360} 90% 62%)`,
+    accent,
   };
 }
 
@@ -411,17 +450,20 @@ function topoScene(hue) {
   <rect x="16" y="16" width="368" height="368" rx="22" fill="none" stroke="${INK}" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round"/>`;
 }
 
-function glyphMarkup(glyph, hue) {
-  return (GLYPHS[glyph] ?? GLYPHS.tent)(palette(hue));
+function glyphMarkup(glyph, hue, color) {
+  return (GLYPHS[glyph] ?? GLYPHS.tent)(palette(hue, color));
 }
 
 /**
  * @param {{ slug: string, name: string, hue: number, category?: { slug: string } }} product
  * @param {1|2|3} n which gallery composition
+ * @param {string} [color] a variant colour from COLOR_SWATCHES
  */
-export function productArt({ slug, name, hue, category }, n) {
+export function productArt({ slug, name, hue, category }, n, color) {
   const glyph = PRODUCT_GLYPHS[slug] ?? CATEGORY_ART[category?.slug]?.glyph ?? 'tent';
-  return renderArt({ seed: slug ?? name, label: name, glyph, hue, n });
+  const known = COLOR_SWATCHES[color] ? color : undefined;
+  const label = known ? `${name}, ${known}` : name;
+  return renderArt({ seed: slug ?? name, label, glyph, hue, n, color: known });
 }
 
 export function categoryArt(slug) {
@@ -430,9 +472,9 @@ export function categoryArt(slug) {
   return renderArt({ seed: slug, label: slug, glyph: art.glyph, hue: art.hue, n: 2 });
 }
 
-function renderArt({ seed, label, glyph, hue, n }) {
+function renderArt({ seed, label, glyph, hue, n, color }) {
   const rand = rng(`${seed}:${n}`);
-  const body = glyphMarkup(glyph, hue);
+  const body = glyphMarkup(glyph, hue, color);
   let scene;
   let placed;
   if (n === 2) {

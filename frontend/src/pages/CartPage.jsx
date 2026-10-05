@@ -25,7 +25,7 @@ function CartLine({ item, onError }) {
   return (
     <li className="cart-line" data-testid="cart-line">
       <Link to={`/p/${item.product.slug}`} className="cart-line__image">
-        <img src={productImage(item.product.slug)} alt="" />
+        <img src={productImage(item.product.slug, 1, item.variant.color)} alt="" />
       </Link>
       <div className="cart-line__info">
         <Link to={`/p/${item.product.slug}`} className="cart-line__name">

@@ -51,6 +51,7 @@ export function CartProvider({ children }) {
             quantity,
             product: line.product,
             label: line.variant.label,
+            color: line.variant.color,
           });
         }
         return next;

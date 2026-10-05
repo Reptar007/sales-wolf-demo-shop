@@ -24,8 +24,16 @@ export default function OrderConfirmationPage() {
       <p className="confirmation__eyebrow">Awoooo!</p>
       <h1>Thanks for your order!</h1>
       <p className="muted">
-        A confirmation was sent to <strong>{data.order.email}</strong> — find it in the{' '}
-        <Link to="/demo-inbox">demo inbox</Link>.
+        {user ? (
+          <>
+            It’s saved in your <Link to="/account">order history</Link>.
+          </>
+        ) : (
+          <>
+            Keep your order number handy — <Link to="/signin">sign in</Link> next time to keep an
+            order history.
+          </>
+        )}
       </p>
       <OrderDetail order={data.order} />
       <div className="form__actions confirmation__actions">

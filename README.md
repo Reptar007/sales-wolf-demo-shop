@@ -97,29 +97,31 @@ the same test database.
 
 ## Demo credentials
 
-Every seeded account uses the password `WolfMart!2026`: `demo@wolfmart.test`
-(with order history), `alpha@wolfmart.test`, `pack@wolfmart.test`. Demo cards,
+Every seeded account uses the password `WolfMart!2026`. Each SE has their own
+(`sebastian@`, `ricky@`, `jun@wolfmart.test`, with order history) so simultaneous
+demos never share a cart; `demo@wolfmart.test` is the generic one, and
+`alpha@`/`pack@` are empty. Demo cards,
 promo codes, the flag-by-flag demo script, and the pre-call checklist are in
 [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
 
 ## Routes
 
-| Storefront                | Page                                           |
-| ------------------------- | ---------------------------------------------- |
-| `/`                       | Home                                           |
-| `/c/:category`            | Category listing                               |
-| `/search?q=`              | Search results                                 |
-| `/p/:slug`                | Product                                        |
-| `/cart`                   | Cart                                           |
-| `/checkout`               | Checkout                                       |
-| `/order/:number`          | Order confirmation                             |
-| `/signin`, `/signup`      | Sign in / create account                       |
-| `/forgot-password`        | Request a reset link (lands in the demo inbox) |
-| `/reset-password`         | Choose a new password                          |
-| `/account`                | Profile, addresses, order history              |
-| `/account/orders/:number` | Past order                                     |
-| `/demo-inbox`             | Mail the store "sent" from this browser        |
-| `/status`                 | Health and isolation check                     |
+| Storefront                | Page                                             |
+| ------------------------- | ------------------------------------------------ |
+| `/`                       | Home                                             |
+| `/c/:category`            | Category listing                                 |
+| `/search?q=`              | Search results                                   |
+| `/p/:slug`                | Product                                          |
+| `/cart`                   | Cart                                             |
+| `/checkout`               | Checkout                                         |
+| `/order/:number`          | Order confirmation                               |
+| `/signin`, `/signup`      | Sign in / create account                         |
+| `/forgot-password`        | Request a reset link (lands in the test mailbox) |
+| `/reset-password`         | Choose a new password                            |
+| `/account`                | Profile, addresses, order history                |
+| `/account/orders/:number` | Past order                                       |
+| `/demo-inbox`             | Test mailbox: password reset links               |
+| `/status`                 | Health and isolation check                       |
 
 | SE-only (demo passphrase) | Page                                    |
 | ------------------------- | --------------------------------------- |
@@ -184,7 +186,7 @@ curl -s https://sales-wolf-demo-shop-*.herokuapp.com/api/health | grep egressAll
 - **P1 complete** — catalog, search and filters, cart, checkout with demo cards
   and promo codes.
 - **P2 complete** — accounts, cart merge on sign-in, order history, saved
-  addresses, password reset via the demo inbox.
+  addresses, password reset via the test mailbox.
 - **P3 complete** — live chat over socket.io (same origin, WebSocket only,
   Origin-checked): a storefront widget answered by an SE from `/agent`, with
   typing indicators, unread badges, history on reload, and reconnect.

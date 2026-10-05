@@ -80,6 +80,10 @@ export function SignInPage() {
           <code>demo@wolfmart.test</code> / <code>WolfMart!2026</code>
         </p>
         <p className="muted">Has saved addresses and order history. Data resets nightly.</p>
+        <p className="muted">
+          Demoing for the team? Use your own <code>firstname@wolfmart.test</code> account (same
+          password) so your cart and orders stay yours.
+        </p>
       </aside>
     </section>
   );
@@ -164,7 +168,7 @@ export function ForgotPasswordPage() {
             {sent}
           </p>
           <p>
-            This demo has no real email. Open the <Link to="/demo-inbox">demo inbox</Link> to find
+            This demo has no real email. Open the <Link to="/demo-inbox">test mailbox</Link> to find
             your reset link.
           </p>
         </div>
@@ -216,7 +220,7 @@ export function ResetPasswordPage() {
       <section className="page page--narrow auth">
         <h1>Reset link missing</h1>
         <p>
-          Open the link from your <Link to="/demo-inbox">demo inbox</Link>, or{' '}
+          Open the link from your <Link to="/demo-inbox">test mailbox</Link>, or{' '}
           <Link to="/forgot-password">request a new one</Link>.
         </p>
       </section>

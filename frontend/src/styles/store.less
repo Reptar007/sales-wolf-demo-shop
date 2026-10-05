@@ -753,6 +753,20 @@
     outline-offset: 2px;
   }
 
+  &__swatch {
+    display: inline-block;
+    width: 0.85rem;
+    height: 0.85rem;
+    margin-right: 0.4rem;
+    border-radius: 50%;
+    border: 2px solid @ink;
+    vertical-align: -0.1em;
+  }
+
+  input:checked + span &__swatch {
+    border-color: @moon;
+  }
+
   &--unavailable span {
     color: @muted;
     text-decoration: line-through;

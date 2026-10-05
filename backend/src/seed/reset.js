@@ -65,16 +65,16 @@ export async function resetDemoData(prisma) {
   await prisma.chaosFlag.createMany({ data: CHAOS_FLAGS });
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
-  for (const { withHistory, ...user } of DEMO_USERS) {
+  for (const { history, ...user } of DEMO_USERS) {
     const created = await prisma.demoUser.create({ data: { ...user, passwordHash } });
-    if (withHistory) await seedHistory(prisma, created);
+    if (history) await seedHistory(prisma, created, history);
   }
 
   return { products: products.length, categories: CATEGORIES.length, users: DEMO_USERS.length };
 }
 
-/** Gives the primary demo account a saved address and two past orders. */
-async function seedHistory(prisma, user) {
+/** Gives an account a saved address and its past orders. */
+async function seedHistory(prisma, user, past) {
   const address = {
     name: user.name,
     line1: '42 Howling Ridge Rd',
@@ -86,11 +86,6 @@ async function seedHistory(prisma, user) {
   await prisma.address.create({
     data: { ...address, userId: user.id, label: 'Home', isDefault: true },
   });
-
-  const past = [
-    { number: 'WM-100001', slug: 'howl-hoodie', status: 'DELIVERED', daysAgo: 40, quantity: 1 },
-    { number: 'WM-100002', slug: 'cast-iron-skillet', status: 'SHIPPED', daysAgo: 3, quantity: 2 },
-  ];
 
   for (const order of past) {
     const product = await prisma.product.findUnique({

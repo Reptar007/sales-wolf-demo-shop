@@ -14,7 +14,6 @@ import { SHIPPING_METHODS, variantLabel } from '../commerce/pricing.js';
 import {
   ORDER_INCLUDE,
   PAYMENT_TOKENS,
-  formatCents,
   newOrderNumber,
   serializeOrder,
 } from '../commerce/orders.js';
@@ -145,19 +144,8 @@ router.post('/checkout', async (req, res) => {
       });
     }
 
-    await tx.inboxMessage.create({
-      data: {
-        visitorId: req.visitorId,
-        to: email,
-        subject: `Your WolfMart order ${created.number} is confirmed`,
-        body:
-          `Thanks for shopping with WolfMart! We received order ${created.number} ` +
-          `(${created.items.length} item${created.items.length === 1 ? '' : 's'}, ` +
-          `total ${formatCents(created.totalCents)}). We’ll let you know when it ships.`,
-        linkLabel: 'View your order',
-        linkPath: `/order/${created.number}`,
-      },
-    });
+    // No confirmation "email": order history and the confirmation page are the
+    // one place orders live. The test mailbox is only for password resets.
 
     return created;
   });

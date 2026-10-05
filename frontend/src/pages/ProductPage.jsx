@@ -20,7 +20,7 @@ function stockMessage(variant) {
   return { tone: 'ok', text: 'In stock' };
 }
 
-function OptionGroup({ legend, options, value, onChange, isAvailable }) {
+function OptionGroup({ legend, options, value, onChange, isAvailable, swatches }) {
   return (
     <fieldset className="options">
       <legend>
@@ -39,7 +39,16 @@ function OptionGroup({ legend, options, value, onChange, isAvailable }) {
               checked={value === option}
               onChange={() => onChange(option)}
             />
-            <span>{option}</span>
+            <span>
+              {swatches?.[option] && (
+                <i
+                  className="option__swatch"
+                  style={{ background: swatches[option] }}
+                  aria-hidden="true"
+                />
+              )}
+              {option}
+            </span>
           </label>
         ))}
       </div>
@@ -102,7 +111,7 @@ function ProductDetail({ product, related }) {
         <div className="gallery">
           <img
             className="gallery__main"
-            src={productImage(product.slug, image)}
+            src={productImage(product.slug, image, color)}
             alt={`${product.name}, image ${image} of ${product.imageCount}`}
           />
           <div className="gallery__thumbs" role="group" aria-label="Product images">
@@ -115,7 +124,7 @@ function ProductDetail({ product, related }) {
                 aria-pressed={image === n}
                 onClick={() => setImage(n)}
               >
-                <img src={productImage(product.slug, n)} alt="" />
+                <img src={productImage(product.slug, n, color)} alt="" />
               </button>
             ))}
           </div>
@@ -138,6 +147,7 @@ function ProductDetail({ product, related }) {
           {colors.length > 0 && (
             <OptionGroup
               legend="Color"
+              swatches={product.swatches}
               options={colors}
               value={color}
               onChange={(c) => {

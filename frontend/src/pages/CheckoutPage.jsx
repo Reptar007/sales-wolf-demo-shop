@@ -97,7 +97,7 @@ function ContactStep({ draft, onNext }) {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         error={error}
-        hint="Your confirmation lands in the demo inbox."
+        hint="We’ll show your order confirmation right after you pay."
       />
       <div className="form__actions">
         <button className="button" type="submit">
