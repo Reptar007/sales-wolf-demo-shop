@@ -87,6 +87,9 @@ router.post('/addresses', async (req, res) => {
 router.put('/addresses/:id', async (req, res) => {
   const address = await ownedAddress(req);
   const data = readAddress(req.body);
+  // The default stays the default until another address claims it; editing it
+  // with the box unticked would otherwise leave the account with none.
+  if (address.isDefault) data.isDefault = true;
   await prisma.$transaction(async (tx) => {
     if (data.isDefault)
       await tx.address.updateMany({ where: { userId: req.user.id }, data: { isDefault: false } });

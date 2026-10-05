@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node --test 'test/*.test.js'",
+    "test": "node --test --test-concurrency=1 'test/*.test.js'",
+    "test:isolation": "node --test test/isolation.test.js test/egress.test.js",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

@@ -53,23 +53,81 @@ That is the intended friction.
 
 ## Setup
 
-Requires Node **24.16.0** (engine-strict — a wrong version fails `npm ci`).
+Requires Node **24.16.0** (engine-strict — a wrong version fails `npm ci`) and
+Postgres 17.
 
 ```bash
 nvm use 24.16.0
+brew install postgresql@17
+brew services start postgresql@17
+createdb wolfmart_local
+createdb wolfmart_test          # integration tests TRUNCATE this one
+
 npm run install:all
-cp .env.example .env   # then fill in DATABASE_URL and DEMO_JWT_SECRET
-npm run dev            # backend :7072, frontend :5174
+cp .env.example .env            # then set DATABASE_URL, TEST_DATABASE_URL,
+                                # DEMO_JWT_SECRET, DEMO_CONTROL_PASSPHRASE
+cd backend && npx prisma migrate deploy && cd ..
+npm run demo:reset              # seed the catalog, demo accounts, and flags
+npm run dev                     # backend :7072, frontend :5174
 ```
+
+With Homebrew Postgres the URLs are
+`postgresql://<your macOS username>@localhost:5432/wolfmart_local` and
+`…/wolfmart_test`. Apply migrations to the test database too:
+`cd backend && DATABASE_URL=<test url> npx prisma migrate deploy`.
+
+Never run `prisma migrate reset`, `migrate dev`, or `db push` against a shared
+database; schema changes go through a reviewed migration.
 
 ## Scripts
 
-| Command                           | Does                                         |
-| --------------------------------- | -------------------------------------------- |
-| `npm run dev`                     | Backend + frontend with reload               |
-| `npm test`                        | Backend tests, including the isolation guard |
-| `npm run lint` / `npm run format` | ESLint / Prettier                            |
-| `npm run build`                   | Production frontend build                    |
+| Command                           | Does                                                                                                                  |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                     | Backend + frontend with reload                                                                                        |
+| `npm test`                        | All backend tests, including the isolation guard (needs `TEST_DATABASE_URL` for the API suites; they skip without it) |
+| `npm run demo:reset`              | Wipe and re-seed the database in `DATABASE_URL` (the nightly job)                                                     |
+| `npm run lint` / `npm run format` | ESLint / Prettier                                                                                                     |
+| `npm run build`                   | Production frontend build                                                                                             |
+
+In `backend/`: `npm run test:isolation` runs just the isolation guard and egress
+tests, with no database (CI's first job).
+
+The test files run one at a time (`--test-concurrency=1`) because each one resets
+the same test database.
+
+## Demo credentials
+
+Every seeded account uses the password `WolfMart!2026`: `demo@wolfmart.test`
+(with order history), `alpha@wolfmart.test`, `pack@wolfmart.test`. Demo cards,
+promo codes, the flag-by-flag demo script, and the pre-call checklist are in
+[`docs/RUNBOOK.md`](docs/RUNBOOK.md).
+
+## Routes
+
+| Storefront                | Page                                           |
+| ------------------------- | ---------------------------------------------- |
+| `/`                       | Home                                           |
+| `/c/:category`            | Category listing                               |
+| `/search?q=`              | Search results                                 |
+| `/p/:slug`                | Product                                        |
+| `/cart`                   | Cart                                           |
+| `/checkout`               | Checkout                                       |
+| `/order/:number`          | Order confirmation                             |
+| `/signin`, `/signup`      | Sign in / create account                       |
+| `/forgot-password`        | Request a reset link (lands in the demo inbox) |
+| `/reset-password`         | Choose a new password                          |
+| `/account`                | Profile, addresses, order history              |
+| `/account/orders/:number` | Past order                                     |
+| `/demo-inbox`             | Mail the store "sent" from this browser        |
+| `/status`                 | Health and isolation check                     |
+
+| SE-only (demo passphrase) | Page                                    |
+| ------------------------- | --------------------------------------- |
+| `/agent`                  | Live chat console                       |
+| `/demo-control`           | Chaos flags, Reset all, reset demo data |
+
+Both SE-only screens are `noindex` like the rest of the site and unlock with
+`DEMO_CONTROL_PASSPHRASE`.
 
 ## Verifying the boundary
 
@@ -79,8 +137,8 @@ npm run dev            # backend :7072, frontend :5174
 curl -s localhost:7072/api/health | grep egressAllowlist   # installed: true
 ```
 
-The P0 landing page reports the same status, so opening the deployed URL answers
-"is this still isolated?" without a shell.
+`/status` replaced the P0 landing page as the "is this still isolated?" check:
+opening it on the deployed URL reports the same status without a shell.
 
 ## Deploying
 
@@ -92,12 +150,28 @@ frontend, then installs the backend with `--omit=dev`. Dropping that
 
 ```bash
 heroku create sales-wolf-demo-shop --team qa-wolf
+# This app's OWN Postgres. Never attach another app's (see "The one rule").
+heroku addons:create heroku-postgresql:essential-0 -a sales-wolf-demo-shop
 heroku config:set -a sales-wolf-demo-shop NODE_ENV=production \
-  DEMO_JWT_SECRET="$(openssl rand -base64 32)"
+  DEMO_JWT_SECRET="$(openssl rand -base64 32)" \
+  DEMO_CONTROL_PASSPHRASE="<pick one; share it with the SE team only>"
+# Optional, for the AI assistant (P4):
+heroku config:set -a sales-wolf-demo-shop ANTHROPIC_API_KEY=<key>
 git push heroku main
 ```
 
-No Postgres addon yet — P0 uses no database. Confirm the boundary survived:
+The `release` phase in the `Procfile` runs `prisma migrate deploy` before each
+new release takes traffic. The first deploy has an empty database, so seed it
+once:
+
+```bash
+heroku run npm run demo:reset -a sales-wolf-demo-shop
+```
+
+Then set up the nightly reset with Heroku Scheduler (`npm run demo:reset`, daily);
+step-by-step in [`docs/RUNBOOK.md`](docs/RUNBOOK.md#nightly-reset-heroku-scheduler).
+
+Confirm the boundary survived:
 
 ```bash
 curl -s https://sales-wolf-demo-shop-*.herokuapp.com/api/health | grep egressAllowlist
@@ -105,5 +179,16 @@ curl -s https://sales-wolf-demo-shop-*.herokuapp.com/api/health | grep egressAll
 
 ## Status
 
-**P0 complete** — isolation boundary, stack, CI, deployable skeleton.
-P1 (catalog, cart, checkout) is next. Phases in the plan doc.
+- **P0 complete** — isolation boundary, stack, CI, deployable skeleton.
+- **P1 complete** — catalog, search and filters, cart, checkout with demo cards
+  and promo codes.
+- **P2 complete** — accounts, cart merge on sign-in, order history, saved
+  addresses, password reset via the demo inbox.
+- **P3 complete** — live chat: a storefront chat widget answered by an SE from
+  `/agent`. Being merged in parallel.
+- **P4 complete** — AI shopping assistant on the storefront, backed by the
+  Anthropic API (the one permitted outbound host). Being merged in parallel.
+- **P5 complete** — demo control panel (`/demo-control`), nightly reset, CI with
+  a real Postgres, and the SE runbook.
+
+Phases in the plan doc.
