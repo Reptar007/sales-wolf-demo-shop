@@ -17,6 +17,7 @@ const SORTS = {
 };
 
 const PAGE_SIZE = 12;
+const MAX_PAGE_SIZE = 48;
 const LOW_STOCK = 3;
 
 const str = (value, max = 80) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
@@ -101,6 +102,11 @@ router.get('/products', async (req, res) => {
   };
   const sort = SORTS[req.query.sort] ? req.query.sort : 'featured';
   const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+  // ?pageSize= lets a demo or test pick how many pages a listing spans.
+  const pageSize = Math.min(
+    MAX_PAGE_SIZE,
+    Math.max(1, Number.parseInt(req.query.pageSize, 10) || PAGE_SIZE),
+  );
 
   // search_latency: a search that still works, just slowly enough to blow a
   // reasonable timeout. Browsing without a query stays fast, so only the search
@@ -116,8 +122,8 @@ router.get('/products', async (req, res) => {
     prisma.product.findMany({
       where,
       orderBy: SORTS[sort],
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
       include: SUMMARY_INCLUDE,
     }),
     prisma.product.groupBy({ by: ['categoryId'], where: facetWhere, _count: true }),
@@ -136,8 +142,8 @@ router.get('/products', async (req, res) => {
     items: products.map(productSummary),
     total,
     page,
-    pageSize: PAGE_SIZE,
-    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pageSize,
+    pageCount: Math.max(1, Math.ceil(total / pageSize)),
     sort,
     facets: {
       categories: categories.map((c) => ({
