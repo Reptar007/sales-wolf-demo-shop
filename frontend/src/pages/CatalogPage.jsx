@@ -30,6 +30,7 @@ export default function CatalogPage({ mode }) {
     maxPrice: params.get('maxPrice') ?? '',
     sort: params.get('sort') ?? 'featured',
     page: params.get('page') ?? '',
+    pageSize: params.get('pageSize') ?? '',
   };
 
   const { data, error, loading } = useApi(`/products${toQuery(filters)}`);
