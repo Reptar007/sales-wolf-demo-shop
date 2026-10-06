@@ -1,7 +1,7 @@
 import express from 'express';
 import { prisma } from '../db.js';
 import { isEnabled, sleep } from '../chaos/flags.js';
-import { notFound } from '../http/errors.js';
+import { badRequest, notFound } from '../http/errors.js';
 import { COLOR_SWATCHES, categoryArt, productArt } from '../commerce/art.js';
 import { variantLabel } from '../commerce/pricing.js';
 
@@ -100,6 +100,12 @@ router.get('/products', async (req, res) => {
     minPriceCents: dollarsToCents(req.query.minPrice),
     maxPriceCents: dollarsToCents(req.query.maxPrice),
   };
+  const { minPriceCents, maxPriceCents } = filters;
+  if (minPriceCents != null && maxPriceCents != null && minPriceCents > maxPriceCents) {
+    throw badRequest('Minimum price can’t be more than the maximum price.', {
+      field: 'minPrice',
+    });
+  }
   const sort = SORTS[req.query.sort] ? req.query.sort : 'featured';
   const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
   // ?pageSize= lets a demo or test pick how many pages a listing spans.

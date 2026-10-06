@@ -43,6 +43,17 @@ describe('commerce', { skip: !hasTestDatabase() && 'TEST_DATABASE_URL not set' }
     assert.ok(kitchen.body.items.every((p) => p.category.slug === 'kitchen'));
   });
 
+  test('a price range with min above max is rejected, not silently empty', async () => {
+    const client = createClient(app.baseUrl);
+    const { status, body } = await client.json('/api/products?minPrice=69&maxPrice=49');
+    assert.equal(status, 400);
+    assert.equal(body.code, 'BAD_REQUEST');
+    assert.match(body.error, /minimum price/i);
+
+    const equal = await client.json('/api/products?minPrice=49&maxPrice=49');
+    assert.equal(equal.status, 200);
+  });
+
   test('catalog pages by a pageSize parameter', async () => {
     const client = createClient(app.baseUrl);
     const all = await client.json('/api/products?category=apparel');
