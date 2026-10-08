@@ -149,6 +149,7 @@ export default function CartPage() {
   }
 
   const blocked = cart.items.some((i) => !i.inStock);
+  const itemCount = cart.items.reduce((count, item) => count + item.quantity, 0);
   const toFreeShipping =
     cart.freeShippingThresholdCents - (cart.totals.subtotalCents - cart.totals.discountCents);
 
@@ -169,7 +170,7 @@ export default function CartPage() {
           </ul>
           <Link to="/">← Continue shopping</Link>
         </div>
-        <OrderSummary totals={cart.totals} promoCode={cart.promo?.code}>
+        <OrderSummary totals={cart.totals} promoCode={cart.promo?.code} itemCount={itemCount}>
           {toFreeShipping > 0 && (
             <p className="muted summary__note">
               Add {money(toFreeShipping)} more for free standard shipping.
