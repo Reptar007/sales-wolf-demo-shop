@@ -30,9 +30,11 @@ export default function CatalogPage({ mode }) {
     maxPrice: params.get('maxPrice') ?? '',
     sort: params.get('sort') ?? 'featured',
     page: params.get('page') ?? '',
+    pageSize: params.get('pageSize') ?? '',
   };
 
   const { data, error, loading } = useApi(`/products${toQuery(filters)}`);
+  const [priceError, setPriceError] = useState('');
   // Open beside the results on wide screens; a tap-to-open drawer on phones.
   const [filtersOpen, setFiltersOpen] = useState(
     () => typeof window === 'undefined' || window.matchMedia('(min-width: 961px)').matches,
@@ -137,7 +139,14 @@ export default function CatalogPage({ mode }) {
                 onSubmit={(e) => {
                   e.preventDefault();
                   const form = new FormData(e.currentTarget);
-                  update({ minPrice: form.get('minPrice'), maxPrice: form.get('maxPrice') });
+                  const minPrice = form.get('minPrice');
+                  const maxPrice = form.get('maxPrice');
+                  if (minPrice !== '' && maxPrice !== '' && Number(minPrice) > Number(maxPrice)) {
+                    setPriceError('Minimum price can’t be more than the maximum price.');
+                    return;
+                  }
+                  setPriceError('');
+                  update({ minPrice, maxPrice });
                 }}
               >
                 <label>
@@ -145,6 +154,8 @@ export default function CatalogPage({ mode }) {
                   <input
                     name="minPrice"
                     type="number"
+                    aria-invalid={priceError ? 'true' : undefined}
+                    aria-describedby={priceError ? 'price-error' : undefined}
                     min="0"
                     placeholder="$ min"
                     defaultValue={filters.minPrice}
@@ -155,6 +166,8 @@ export default function CatalogPage({ mode }) {
                   <input
                     name="maxPrice"
                     type="number"
+                    aria-invalid={priceError ? 'true' : undefined}
+                    aria-describedby={priceError ? 'price-error' : undefined}
                     min="0"
                     placeholder="$ max"
                     defaultValue={filters.maxPrice}
@@ -164,6 +177,11 @@ export default function CatalogPage({ mode }) {
                   Apply
                 </button>
               </form>
+              {priceError && (
+                <p id="price-error" className="field__error" role="alert">
+                  {priceError}
+                </p>
+              )}
             </fieldset>
 
             {facets?.colors.length > 0 && (
@@ -202,7 +220,10 @@ export default function CatalogPage({ mode }) {
               <button
                 type="button"
                 className="link-button"
-                onClick={() => update(Object.fromEntries(activeFilters.map((k) => [k, ''])))}
+                onClick={() => {
+                  setPriceError('');
+                  update(Object.fromEntries(activeFilters.map((k) => [k, ''])));
+                }}
               >
                 Clear filters
               </button>

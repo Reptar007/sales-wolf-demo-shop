@@ -1,0 +1,25 @@
+{
+  "name": "WolfMart demo shop",
+  "description": "WolfMart demo storefront. Used by Heroku Review Apps to spin up one app per pull request.",
+  "repository": "https://github.com/Reptar007/sales-wolf-demo-shop",
+  "buildpacks": [{ "url": "heroku/nodejs" }],
+  "formation": {
+    "web": { "quantity": 1, "size": "basic" }
+  },
+  "addons": [{ "plan": "heroku-postgresql:essential-0", "as": "DATABASE" }],
+  "env": {
+    "NODE_ENV": { "value": "production" },
+    "DEMO_JWT_SECRET": {
+      "description": "This app's own signing secret, generated per review app.",
+      "generator": "secret"
+    },
+    "DEMO_CONTROL_PASSPHRASE": {
+      "description": "Passphrase gating /demo-control and /agent. Set it once in the pipeline's review app config vars.",
+      "required": true
+    },
+    "ASSISTANT_MONTHLY_BUDGET_USD": { "value": "25" }
+  },
+  "scripts": {
+    "postdeploy": "cd backend && npm run demo:reset"
+  }
+}

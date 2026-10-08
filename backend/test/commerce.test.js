@@ -43,6 +43,37 @@ describe('commerce', { skip: !hasTestDatabase() && 'TEST_DATABASE_URL not set' }
     assert.ok(kitchen.body.items.every((p) => p.category.slug === 'kitchen'));
   });
 
+  test('a price range with min above max is rejected, not silently empty', async () => {
+    const client = createClient(app.baseUrl);
+    const { status, body } = await client.json('/api/products?minPrice=69&maxPrice=49');
+    assert.equal(status, 400);
+    assert.equal(body.code, 'BAD_REQUEST');
+    assert.match(body.error, /minimum price/i);
+
+    const equal = await client.json('/api/products?minPrice=49&maxPrice=49');
+    assert.equal(equal.status, 200);
+  });
+
+  test('catalog pages by a pageSize parameter', async () => {
+    const client = createClient(app.baseUrl);
+    const all = await client.json('/api/products?category=apparel');
+    // Every category seeds past one default page, so the pager always shows.
+    assert.equal(all.body.pageSize, 12);
+    assert.ok(all.body.pageCount > 1);
+
+    const first = await client.json('/api/products?category=apparel&pageSize=3');
+    assert.equal(first.body.items.length, 3);
+    assert.equal(first.body.pageCount, Math.ceil(all.body.total / 3));
+
+    const second = await client.json('/api/products?category=apparel&pageSize=3&page=2');
+    assert.equal(second.body.page, 2);
+    const firstSlugs = new Set(first.body.items.map((p) => p.slug));
+    assert.ok(second.body.items.every((p) => !firstSlugs.has(p.slug)));
+
+    const clamped = await client.json('/api/products?pageSize=9999');
+    assert.equal(clamped.body.pageSize, 48);
+  });
+
   test('a guest completes a purchase and sees the confirmation', async () => {
     const shopper = createClient(app.baseUrl);
     const variant = await firstVariant(shopper, 'cast-iron-skillet');
