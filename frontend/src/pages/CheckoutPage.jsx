@@ -8,6 +8,7 @@ import { useApi } from '../hooks/useApi.js';
 import { api } from '../lib/api.js';
 import { DEMO_CARD_HINT, formatCardNumber, tokenizeDemoCard } from '../lib/demoCards.js';
 import { money } from '../lib/format.js';
+import { emailProblem } from '../lib/validation.js';
 
 const STEPS = ['Contact', 'Shipping', 'Payment', 'Review'];
 const DRAFT_KEY = 'wolfmart.checkout';
@@ -84,8 +85,7 @@ function ContactStep({ draft, onNext }) {
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-          return setError('Enter a valid email address.');
+        setError(emailProblem(email));
         onNext({ email: email.trim() });
       }}
     >
