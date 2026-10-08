@@ -593,6 +593,22 @@ code {
     }
   }
 
+  &--neon {
+    background: #ff10f0;
+    color: #fff;
+    box-shadow:
+      @pop,
+      0 0 12px #ff10f0,
+      0 0 28px fade(#ff10f0, 60%);
+
+    &:hover {
+      box-shadow:
+        5px 6px 0 @ink,
+        0 0 18px #ff10f0,
+        0 0 40px fade(#ff10f0, 70%);
+    }
+  }
+
   &--moon {
     background: @moon;
     color: @ink;

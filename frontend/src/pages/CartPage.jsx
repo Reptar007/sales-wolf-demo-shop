@@ -178,7 +178,7 @@ export default function CartPage() {
           <PromoForm />
           <button
             type="button"
-            className="button button--accent button--block"
+            className="button button--neon button--block"
             disabled={blocked}
             onClick={() => navigate('/checkout')}
           >
