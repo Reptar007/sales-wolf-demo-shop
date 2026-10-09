@@ -905,7 +905,7 @@ export const DEMO_USERS = [
 ];
 
 export const PROMO_CODES = [
-  { code: 'WOLF10', description: '10% off your order', percentOff: 10 },
+  { code: 'WOLF20', description: '20% off your order', percentOff: 20 },
   {
     code: 'PACK20',
     description: '$20 off orders of $100 or more',

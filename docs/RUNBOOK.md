@@ -72,7 +72,7 @@ real shopper would hit. Flags are off after every reset.
 | `login_flake` (Login fails 1 in 3)              | About one sign-in in three is rejected even with the right password.        | Sign in as `demo@wolfmart.test`                         | The sign-in flow fails intermittently across runs.                          | "A flake is a bug you haven't found yet. QA Wolf flags the pattern instead of letting it get re-run into green."    |
 | `stock_race` (Stock race at checkout)           | Items look in stock and add to cart, then checkout says they just sold out. | Add to cart (works) → place order (409 "just sold out") | The purchase flow fails at the last step, after every earlier check passed. | "Every page said in stock. Only an end-to-end run catches the race at purchase time."                               |
 | `image_404` (Product images 404)                | Every product image request returns 404; the pages themselves still load.   | Home page or any category                               | Broken images are detected even though the page returned 200.               | "Uptime monitoring says the site is up. Your customers see a store with no pictures."                               |
-| `promo_expired` (Valid promo silently rejected) | `WOLF10` and `PACK20` appear to apply, but no discount is taken.            | Cart → apply `WOLF10`                                   | The assertion on the discounted total fails.                                | "No error, no red text. The only way to catch it is to check the number."                                           |
+| `promo_expired` (Valid promo silently rejected) | `WOLF20` and `PACK20` appear to apply, but no discount is taken.            | Cart → apply `WOLF20`                                   | The assertion on the discounted total fails.                                | "No error, no red text. The only way to catch it is to check the number."                                           |
 
 ## Credential card
 
@@ -115,7 +115,7 @@ Promo codes:
 
 | Code       | Effect                   |
 | ---------- | ------------------------ |
-| `WOLF10`   | 10% off                  |
+| `WOLF20`   | 20% off                  |
 | `PACK20`   | $20 off orders of $100+  |
 | `HOWL2024` | Expired (shows an error) |
 
