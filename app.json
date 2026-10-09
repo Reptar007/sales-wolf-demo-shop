@@ -18,8 +18,5 @@
       "required": true
     },
     "ASSISTANT_MONTHLY_BUDGET_USD": { "value": "25" }
-  },
-  "scripts": {
-    "postdeploy": "cd backend && npm run demo:reset"
   }
 }
