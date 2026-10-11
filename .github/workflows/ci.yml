@@ -32,7 +32,10 @@ jobs:
     timeout-minutes: 15
     services:
       postgres:
-        image: postgres:17
+        # The official image via AWS's public mirror: anonymous Docker Hub pulls
+        # from shared GitHub runners hit Docker's rate limit and fail the job
+        # before a single test runs.
+        image: public.ecr.aws/docker/library/postgres:17
         env:
           POSTGRES_USER: wolfmart
           POSTGRES_PASSWORD: wolfmart
