@@ -239,6 +239,17 @@ describe('demo control API', { skip }, () => {
     assert.equal(flags.length, 0, 'nothing changed');
   });
 
+  test('health shows which switches are on, without a staff session', async () => {
+    const stranger = createClient(app.baseUrl);
+    const clean = await stranger.json('/api/health');
+    assert.equal(clean.status, 200);
+    assert.deepEqual(clean.body.demoSwitchesOn, []);
+
+    await app.setFlag('promo_expired', true);
+    const dirty = await stranger.json('/api/health');
+    assert.deepEqual(dirty.body.demoSwitchesOn, ['Valid promo silently rejected']);
+  });
+
   test('lists every flag with its demo copy, in plan order', async () => {
     const se = await staffClient();
     const { status, body } = await se.json('/api/demo-control/flags');
