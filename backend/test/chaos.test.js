@@ -190,16 +190,16 @@ describe('chaos flags', { skip }, () => {
   test('promo_expired: a valid code reads as applied but takes nothing off', async () => {
     const healthy = await (
       await shopperWithCart()
-    ).json('/api/cart/promo', { method: 'POST', body: { code: 'WOLF10' } });
+    ).json('/api/cart/promo', { method: 'POST', body: { code: 'WOLF20' } });
     assert.equal(healthy.status, 200);
     assert.ok(healthy.body.cart.totals.discountCents > 0);
 
     await app.setFlag('promo_expired', true);
     const silent = await (
       await shopperWithCart()
-    ).json('/api/cart/promo', { method: 'POST', body: { code: 'WOLF10' } });
+    ).json('/api/cart/promo', { method: 'POST', body: { code: 'WOLF20' } });
     assert.equal(silent.status, 200);
-    assert.equal(silent.body.cart.promo.code, 'WOLF10');
+    assert.equal(silent.body.cart.promo.code, 'WOLF20');
     assert.equal(silent.body.cart.promo.problem, null, 'no error is shown to the shopper');
     assert.equal(silent.body.cart.totals.discountCents, 0);
   });
