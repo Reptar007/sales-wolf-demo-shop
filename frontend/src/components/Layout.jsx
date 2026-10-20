@@ -18,7 +18,7 @@ const CATEGORIES = [
 
 const ANNOUNCEMENTS = [
   'Free standard shipping over $75',
-  'Code WOLF10 takes 10% off',
+  'Fall sale: code WOLF20 takes 20% off',
   'Demo store — nothing here is real, everything here works',
   'New moon, new gear',
 ];
