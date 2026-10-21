@@ -22,7 +22,7 @@ function PromoStrip() {
   return (
     <section className="promo-strip" aria-label="Current offer">
       <p className="promo-strip__text">
-        <span className="promo-strip__big">10% off</span> your whole order with code
+        <span className="promo-strip__big">20% off</span> your whole order with code
       </p>
       <button
         type="button"
