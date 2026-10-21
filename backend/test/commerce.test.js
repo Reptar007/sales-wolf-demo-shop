@@ -87,9 +87,9 @@ describe('commerce', { skip: !hasTestDatabase() && 'TEST_DATABASE_URL not set' }
 
     const promo = await shopper.json('/api/cart/promo', {
       method: 'POST',
-      body: { code: 'wolf10' },
+      body: { code: 'wolf20' },
     });
-    assert.equal(promo.body.cart.totals.discountCents, Math.round(variant.priceCents * 2 * 0.1));
+    assert.equal(promo.body.cart.totals.discountCents, Math.round(variant.priceCents * 2 * 0.2));
 
     const placed = await shopper.json('/api/checkout', {
       method: 'POST',
