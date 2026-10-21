@@ -22,14 +22,14 @@ function PromoStrip() {
   return (
     <section className="promo-strip" aria-label="Current offer">
       <p className="promo-strip__text">
-        <span className="promo-strip__big">10% off</span> your whole order with code
+        <span className="promo-strip__big">20% off</span> your whole order with code
       </p>
       <button
         type="button"
         className="promo-strip__code"
         onClick={async () => {
           try {
-            await navigator.clipboard.writeText('WOLF10');
+            await navigator.clipboard.writeText('WOLF20');
             setCopied(true);
             setTimeout(() => setCopied(false), 1800);
           } catch {
@@ -37,7 +37,7 @@ function PromoStrip() {
           }
         }}
       >
-        WOLF10 <span className="promo-strip__hint">{copied ? 'Copied!' : 'Copy'}</span>
+        WOLF20 <span className="promo-strip__hint">{copied ? 'Copied!' : 'Copy'}</span>
       </button>
     </section>
   );
