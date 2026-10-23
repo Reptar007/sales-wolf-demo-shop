@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard.jsx';
 import Rating from '../components/Rating.jsx';
+import WalletCheckout from '../components/WalletCheckout.jsx';
 import NotFoundPage from './NotFoundPage.jsx';
 import { useApi } from '../hooks/useApi.js';
 import { useCart } from '../context/CartContext.jsx';
@@ -85,6 +86,7 @@ function ProductDetail({ product, related }) {
   const stock = stockMessage(variant);
   const maxQuantity = Math.min(10, variant?.stock ?? 0);
   const needsSize = sizes.length > 0 && !size;
+  const buyable = Boolean(variant) && !needsSize && variant.stock > 0;
 
   async function add() {
     setBusy(true);
@@ -210,6 +212,12 @@ function ProductDetail({ product, related }) {
                     : 'Add to cart'}
             </button>
           </div>
+
+          <WalletCheckout
+            testId="express-checkout-product"
+            purchase={buyable ? { source: 'buy-now', variantId: variant.id, quantity } : null}
+            quoteKey={buyable ? `${variant.id}:${quantity}` : 'none'}
+          />
 
           {status && (
             <p className={`alert alert--${status.tone}`} role="status">

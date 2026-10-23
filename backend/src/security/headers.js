@@ -8,15 +8,23 @@
  * `connect-src 'self'` stays correct as features land: the AI assistant calls
  * Anthropic server-side (the browser only ever talks to our own /api), and
  * same-origin WebSockets for the P3 chat match 'self' under CSP Level 3.
+ *
+ * The one exception is Stripe, for Apple Pay / Google Pay: Stripe.js must load
+ * from js.stripe.com (Stripe forbids self-hosting it), talks to api.stripe.com,
+ * and renders the wallet buttons in its own frames. These are Stripe's
+ * documented CSP hosts and nothing broader.
  */
+
+const STRIPE_SCRIPTS = 'https://js.stripe.com https://*.js.stripe.com';
 
 const CSP = [
   "default-src 'self'",
-  "connect-src 'self'",
-  "script-src 'self'",
+  "connect-src 'self' https://api.stripe.com",
+  `script-src 'self' ${STRIPE_SCRIPTS}`,
+  `frame-src ${STRIPE_SCRIPTS} https://hooks.stripe.com`,
   // Vite injects styles inline; revisit if we move to extracted CSS.
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://*.stripe.com",
   "font-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",

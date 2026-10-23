@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import OrderSummary from '../components/OrderSummary.jsx';
+import WalletCheckout from '../components/WalletCheckout.jsx';
 import { WolfMark } from '../components/brand/Logo.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { money, productImage } from '../lib/format.js';
@@ -184,6 +185,11 @@ export default function CartPage() {
           >
             Checkout
           </button>
+          <WalletCheckout
+            testId="express-checkout-cart"
+            purchase={blocked ? null : { source: 'cart' }}
+            quoteKey={`${cart.totals.totalCents}:${cart.itemCount}:${cart.promo?.code ?? ''}`}
+          />
         </OrderSummary>
       </div>
     </div>

@@ -4,8 +4,8 @@
  * WolfMart is a PUBLIC, unauthenticated site. Its most exposed surface is the AI
  * assistant, which accepts arbitrary prospect input and is therefore the most
  * likely source of an SSRF or prompt-injection-driven fetch. This module is the
- * control that makes such a bug inert: the server can open exactly one class of
- * outbound connection (the Anthropic API) and nothing else.
+ * control that makes such a bug inert: the server can open exactly two classes
+ * of outbound connection (the Anthropic API and the Stripe API) and nothing else.
  *
  * This is the teeth behind the project's hard requirement — the public URL must
  * never be able to reach SalesWolf. Deploy isolation (separate app, separate DB,
@@ -26,8 +26,11 @@ import http from 'node:http';
 import https from 'node:https';
 import { Agent, buildConnector, setGlobalDispatcher } from 'undici';
 
-/** The only hosts this server may talk to. Default-deny; everything else fails. */
-export const ALLOWED_HOSTS = Object.freeze(['api.anthropic.com']);
+/**
+ * The only hosts this server may talk to. Default-deny; everything else fails.
+ * api.stripe.com: creating and checking PaymentIntents for Apple Pay / Google Pay.
+ */
+export const ALLOWED_HOSTS = Object.freeze(['api.anthropic.com', 'api.stripe.com']);
 
 /**
  * Not load-bearing — ALLOWED_HOSTS already denies these. Listed so that a block
