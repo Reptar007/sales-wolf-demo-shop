@@ -2,7 +2,7 @@
  * Proves the hard requirement: this app cannot reach SalesWolf.
  *
  * These tests make no network connection to a real host. Blocked requests fail
- * at the allowlist, and the one allowed host is asserted by policy rather than
+ * at the allowlist, and the allowed hosts are asserted by policy rather than
  * by dialing it, so the suite is offline-safe and deterministic in CI.
  */
 
@@ -53,9 +53,12 @@ test('everything not on the allowlist is refused by default', () => {
   }
 });
 
-test('the Anthropic API is permitted', () => {
+test('the Anthropic and Stripe APIs are permitted, and nothing else', () => {
   assert.equal(isAllowedHost('api.anthropic.com'), true);
-  assert.deepEqual([...ALLOWED_HOSTS], ['api.anthropic.com']);
+  assert.equal(isAllowedHost('api.stripe.com'), true);
+  assert.equal(isAllowedHost('stripe.com'), false);
+  assert.equal(isAllowedHost('evil-stripe.com'), false);
+  assert.deepEqual([...ALLOWED_HOSTS], ['api.anthropic.com', 'api.stripe.com']);
 });
 
 test('an explicit denial beats the allowlist', () => {

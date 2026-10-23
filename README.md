@@ -19,12 +19,12 @@ Plan and phase breakdown: `docs/public-demo-site-plan.md` in the
 WolfMart is a **separate repo, separate Heroku app, separate database**, with no
 shared code and no shared config vars. On top of that deploy isolation:
 
-| Control                  | Where                             | What it stops                                                                                                                |
-| ------------------------ | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Outbound allowlist       | `backend/src/security/egress.js`  | The server opening a connection to anything but `api.anthropic.com` — default-deny, covering both `fetch` and `http`/`https` |
-| CSP `connect-src 'self'` | `backend/src/security/headers.js` | The page calling an internal host from the prospect's browser                                                                |
-| Isolation guard          | `backend/test/isolation.test.js`  | Internal hosts, credentials, or coupling landing in the repo                                                                 |
-| Boot ordering assert     | `backend/src/index.js`            | The server serving traffic with the allowlist not installed                                                                  |
+| Control                             | Where                             | What it stops                                                                                                                                     |
+| ----------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Outbound allowlist                  | `backend/src/security/egress.js`  | The server opening a connection to anything but `api.anthropic.com` and `api.stripe.com` — default-deny, covering both `fetch` and `http`/`https` |
+| CSP `connect-src 'self'` (+ Stripe) | `backend/src/security/headers.js` | The page calling an internal host from the prospect's browser; only Stripe's documented hosts are added, for Apple Pay / Google Pay               |
+| Isolation guard                     | `backend/test/isolation.test.js`  | Internal hosts, credentials, or coupling landing in the repo                                                                                      |
+| Boot ordering assert                | `backend/src/index.js`            | The server serving traffic with the allowlist not installed                                                                                       |
 
 Three things that are easy to undo by accident:
 

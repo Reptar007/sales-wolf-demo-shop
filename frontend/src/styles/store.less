@@ -1425,3 +1425,27 @@
     margin: 0 0 0.25rem;
   }
 }
+
+// ── Apple Pay / Google Pay (Stripe Express Checkout) ────────────────────────
+
+.wallet {
+  margin: 0 0 1rem;
+
+  // Stripe renders nothing on unregistered domains; collapse rather than gap.
+  &:empty {
+    margin: 0;
+  }
+
+  &__error {
+    margin: 0.75rem 0 0;
+  }
+}
+
+.summary .wallet {
+  margin: 0.75rem 0 0;
+}
+
+.order__payment-ref code {
+  font-size: 0.8125rem;
+  word-break: break-all;
+}

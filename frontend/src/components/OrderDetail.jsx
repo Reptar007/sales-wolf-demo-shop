@@ -47,6 +47,11 @@ export default function OrderDetail({ order }) {
               <p>
                 {order.payment.brand} ending in {order.payment.last4}
               </p>
+              {order.paymentIntentId && (
+                <p className="muted order__payment-ref">
+                  Payment ID <code data-testid="payment-intent-id">{order.paymentIntentId}</code>
+                </p>
+              )}
               <h3>Delivery</h3>
               <p>{order.shippingMethod === 'express' ? 'Express' : 'Standard'}</p>
             </div>

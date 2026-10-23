@@ -124,33 +124,36 @@ enum OrderStatus {
 }
 
 model Order {
-  id             String      @id @default(cuid())
-  number         String      @unique
-  userId         String?
-  user           DemoUser?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id                    String      @id @default(cuid())
+  number                String      @unique
+  userId                String?
+  user                  DemoUser?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   /// Lets a guest see their own confirmation page without an account.
-  visitorId      String?
-  email          String
-  status         OrderStatus @default(PLACED)
-  subtotalCents  Int
-  discountCents  Int
-  shippingCents  Int
-  taxCents       Int
-  totalCents     Int
-  promoCode      String?
-  shippingMethod String
-  shipName       String
-  shipLine1      String
-  shipLine2      String?
-  shipCity       String
-  shipRegion     String
-  shipPostalCode String
-  shipCountry    String
+  visitorId             String?
+  email                 String
+  status                OrderStatus @default(PLACED)
+  subtotalCents         Int
+  discountCents         Int
+  shippingCents         Int
+  taxCents              Int
+  totalCents            Int
+  promoCode             String?
+  shippingMethod        String
+  shipName              String
+  shipLine1             String
+  shipLine2             String?
+  shipCity              String
+  shipRegion            String
+  shipPostalCode        String
+  shipCountry           String
   /// Brand + last four only. Card numbers never reach the server at all.
-  paymentBrand   String
-  paymentLast4   String
-  createdAt      DateTime    @default(now())
-  items          OrderItem[]
+  paymentBrand          String
+  paymentLast4          String
+  /// Set when the order was paid through Stripe (Apple Pay / Google Pay).
+  /// Unique, so a retried "complete" can never create a second order.
+  stripePaymentIntentId String?     @unique
+  createdAt             DateTime    @default(now())
+  items                 OrderItem[]
 
   @@index([userId])
   @@index([visitorId])

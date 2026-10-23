@@ -10,13 +10,8 @@ import {
   requireString,
 } from '../http/errors.js';
 import { findCart, ownerOf, serializeCart } from '../commerce/cart.js';
-import { SHIPPING_METHODS, variantLabel } from '../commerce/pricing.js';
-import {
-  ORDER_INCLUDE,
-  PAYMENT_TOKENS,
-  newOrderNumber,
-  serializeOrder,
-} from '../commerce/orders.js';
+import { SHIPPING_METHODS } from '../commerce/pricing.js';
+import { ORDER_INCLUDE, PAYMENT_TOKENS, createOrder, serializeOrder } from '../commerce/orders.js';
 
 const router = express.Router();
 
@@ -80,74 +75,17 @@ router.post('/checkout', async (req, res) => {
 
   const { totals } = await serializeCart(cart, { shippingMethod });
 
-  const order = await prisma.$transaction(async (tx) => {
-    for (const item of cart.items) {
-      // Conditional decrement: two shoppers racing for the last unit can't
-      // both win, regardless of what either one's cart page said.
-      const { count } = await tx.productVariant.updateMany({
-        where: { id: item.variantId, stock: { gte: item.quantity } },
-        data: { stock: { decrement: item.quantity } },
-      });
-      if (count === 0) {
-        throw conflict('OUT_OF_STOCK', `Sorry — ${item.variant.product.name} just sold out.`, {
-          variantId: item.variantId,
-        });
-      }
-    }
-
-    const created = await tx.order.create({
-      data: {
-        number: newOrderNumber(),
-        userId: req.user?.id ?? null,
-        visitorId: req.visitorId,
-        email,
-        ...totals,
-        promoCode: cart.promoCode?.code ?? null,
-        shippingMethod,
-        shipName: shipping.name,
-        shipLine1: shipping.line1,
-        shipLine2: shipping.line2,
-        shipCity: shipping.city,
-        shipRegion: shipping.region,
-        shipPostalCode: shipping.postalCode,
-        shipCountry: shipping.country,
-        paymentBrand: payment.brand,
-        paymentLast4: payment.last4,
-        items: {
-          create: cart.items.map((item) => ({
-            variantId: item.variantId,
-            productSlug: item.variant.product.slug,
-            productName: item.variant.product.name,
-            variantLabel: variantLabel(item.variant),
-            unitPriceCents: item.variant.priceCents,
-            quantity: item.quantity,
-          })),
-        },
-      },
-      include: ORDER_INCLUDE,
-    });
-
-    await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
-    await tx.cart.update({ where: { id: cart.id }, data: { promoCodeId: null } });
-
-    if (req.user && req.body?.saveAddress) {
-      const hasDefault = await tx.address.count({
-        where: { userId: req.user.id, isDefault: true },
-      });
-      await tx.address.create({
-        data: {
-          ...shipping,
-          userId: req.user.id,
-          label: 'Saved at checkout',
-          isDefault: hasDefault === 0,
-        },
-      });
-    }
-
-    // No confirmation "email": order history and the confirmation page are the
-    // one place orders live. The test mailbox is only for password resets.
-
-    return created;
+  const order = await createOrder({
+    req,
+    items: cart.items,
+    totals,
+    promoCode: cart.promoCode?.code,
+    email,
+    shipping,
+    shippingMethod,
+    payment,
+    clearCartId: cart.id,
+    saveAddress: Boolean(req.body?.saveAddress),
   });
 
   res.status(201).json({ order: serializeOrder(order) });
