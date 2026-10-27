@@ -26,7 +26,8 @@ import {
   priceOf,
   purchaseFromRequest,
   readWalletContact,
-  shippingFromIntent,
+  shippingFromMetadata,
+  shippingMetadata,
   walletPayment,
   walletQuote,
 } from '../commerce/wallet.js';
@@ -93,17 +94,9 @@ router.post('/intent', async (req, res) => {
       currency: 'usd',
       automatic_payment_methods: { enabled: true },
       receipt_email: email,
-      shipping: {
-        name: shipping.name,
-        address: {
-          line1: shipping.line1,
-          line2: shipping.line2 ?? undefined,
-          city: shipping.city,
-          state: shipping.region || undefined,
-          postal_code: shipping.postalCode,
-          country: shipping.country,
-        },
-      },
+      // No `shipping` here. Stripe.js sends the wallet's address when it
+      // confirms with the publishable key, and Stripe rejects that (400) if the
+      // secret key set shipping first. The order's copy rides in metadata.
       description: 'WolfMart demo order',
       metadata: {
         app: 'wolfmart',
@@ -113,6 +106,7 @@ router.post('/intent', async (req, res) => {
         shippingMethod,
         visitorId: req.visitorId,
         userId: req.user?.id ?? '',
+        ...shippingMetadata(shipping),
       },
     }),
   );
@@ -188,7 +182,7 @@ router.post('/complete', async (req, res) => {
       totals,
       promoCode: priced.promoCode,
       email: intent.receipt_email,
-      shipping: shippingFromIntent(intent),
+      shipping: shippingFromMetadata(meta),
       shippingMethod,
       payment: walletPayment(intent),
       stripePaymentIntentId: intent.id,
