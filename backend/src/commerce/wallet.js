@@ -150,17 +150,32 @@ export function walletPayment(paymentIntent) {
   return { brand, last4: card?.last4 ?? '0000' };
 }
 
-/** Reads the order's shipping address back off the PaymentIntent. */
-export function shippingFromIntent(paymentIntent) {
-  const s = paymentIntent.shipping ?? {};
-  const a = s.address ?? {};
+/**
+ * The checked shipping address, as PaymentIntent metadata. It can't go in the
+ * PaymentIntent's own `shipping`: Stripe.js sets that on confirm with the
+ * publishable key, which Stripe refuses once the secret key has set it.
+ */
+export function shippingMetadata(shipping) {
   return {
-    name: s.name ?? '',
-    line1: a.line1 ?? '',
-    line2: a.line2 || null,
-    city: a.city ?? '',
-    region: a.state ?? '',
-    postalCode: a.postal_code ?? '',
-    country: a.country ?? '',
+    shipName: shipping.name,
+    shipLine1: shipping.line1,
+    shipLine2: shipping.line2 ?? '',
+    shipCity: shipping.city,
+    shipRegion: shipping.region,
+    shipPostalCode: shipping.postalCode,
+    shipCountry: shipping.country,
+  };
+}
+
+/** Reads the order's shipping address back off the PaymentIntent's metadata. */
+export function shippingFromMetadata(meta) {
+  return {
+    name: meta.shipName ?? '',
+    line1: meta.shipLine1 ?? '',
+    line2: meta.shipLine2 || null,
+    city: meta.shipCity ?? '',
+    region: meta.shipRegion ?? '',
+    postalCode: meta.shipPostalCode ?? '',
+    country: meta.shipCountry ?? '',
   };
 }

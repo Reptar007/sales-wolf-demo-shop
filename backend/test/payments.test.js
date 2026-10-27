@@ -101,6 +101,9 @@ describe('wallet payments', { skip: !hasTestDatabase() && 'TEST_DATABASE_URL not
     assert.equal(created.currency, 'usd');
     assert.equal(created.metadata.promoCode, 'WOLF10');
     assert.equal(created.receipt_email, 'wallet@wolfmart.test');
+    // Stripe.js sets shipping on confirm; setting it here would make that a 400.
+    assert.equal(created.shipping, undefined);
+    assert.equal(created.metadata.shipCity, 'Lupine Falls');
 
     const early = await shopper.json('/api/payments/complete', {
       method: 'POST',

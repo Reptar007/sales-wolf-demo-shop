@@ -32,6 +32,14 @@ export function createFakeStripe() {
     },
     paymentIntents: {
       async create(params) {
+        // Real Stripe accepts this, but the browser's confirm then fails with a
+        // 400: shipping set with the secret key can't be changed by Stripe.js.
+        if (params.shipping) {
+          throw Object.assign(new Error('shipping set with the secret key blocks confirm'), {
+            type: 'StripeInvalidRequestError',
+            statusCode: 400,
+          });
+        }
         // Unique across fakes: orders from earlier tests stay in the database.
         const id = `pi_fake${randomUUID().replaceAll('-', '')}`;
         const intent = {
@@ -52,6 +60,14 @@ export function createFakeStripe() {
     },
     refunds: Object.assign(refunds, {
       async create(params) {
+        // Real Stripe accepts this, but the browser's confirm then fails with a
+        // 400: shipping set with the secret key can't be changed by Stripe.js.
+        if (params.shipping) {
+          throw Object.assign(new Error('shipping set with the secret key blocks confirm'), {
+            type: 'StripeInvalidRequestError',
+            statusCode: 400,
+          });
+        }
         refunds.push(params);
         return { id: `re_fake${refunds.length}`, ...params };
       },
